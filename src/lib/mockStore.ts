@@ -5,21 +5,23 @@ import {
   representatives as initialRepresentatives,
   type CompanyAccount,
   type CompanyCatalog,
+  type Product,
   type RepresentationFirmAccount,
   type RepresentativeAccount,
   type RepresentativeLink,
 } from '../data/mock'
 
-const companySessionKey = 'catalogo.companySession'
-const representativeSessionKey = 'catalogo.representativeSession'
-const representationFirmSessionKey = 'catalogo.representationFirmSession'
-const inviteTokensKey = 'catalogo.inviteTokens'
-const representativeLinksKey = 'catalogo.representativeLinks'
-const catalogReleasesKey = 'catalogo.catalogReleases'
-const companiesKey = 'catalogo.companies'
-const representativesKey = 'catalogo.representatives'
-const representationFirmsKey = 'catalogo.representationFirms'
-const catalogsKey = 'catalogo.companyCatalogs'
+const storagePrefix = 'catalogo.v2.'
+const companySessionKey = `${storagePrefix}companySession`
+const representativeSessionKey = `${storagePrefix}representativeSession`
+const representationFirmSessionKey = `${storagePrefix}representationFirmSession`
+const inviteTokensKey = `${storagePrefix}inviteTokens`
+const representativeLinksKey = `${storagePrefix}representativeLinks`
+const catalogReleasesKey = `${storagePrefix}catalogReleases`
+const companiesKey = `${storagePrefix}companies`
+const representativesKey = `${storagePrefix}representatives`
+const representationFirmsKey = `${storagePrefix}representationFirms`
+const catalogsKey = `${storagePrefix}companyCatalogs`
 
 type InviteToken = {
   token: string
@@ -122,33 +124,35 @@ export function registerCompany(
     paymentStatus: 'manual_active',
     accessSource: 'manual',
   }
-  const catalogs = getCompanyCatalogs()
-  const slugBase = slugify(newCompany.tradeName)
 
   saveCompanies([...getCompanies(), newCompany])
-  saveCompanyCatalogs([
-    ...catalogs,
-    {
-      id: createId('catalog'),
-      companyId: newCompany.id,
-      name: 'Catalogo Geral',
-      slug: `${slugBase}-geral`,
-      designPresetId: 'clean-wholesale',
-      isReleasedToRepresentatives: true,
-      productsCount: 4,
-    },
-    {
-      id: createId('catalog'),
-      companyId: newCompany.id,
-      name: 'Catalogo Reservado',
-      slug: `${slugBase}-reservado`,
-      designPresetId: 'gift-showcase',
-      isReleasedToRepresentatives: false,
-      productsCount: 4,
-    },
-  ])
 
   return newCompany
+}
+
+export function createCompanyCatalog(companyId: string, name = 'Novo catalogo') {
+  const slugBase = slugify(name)
+  const catalog: CompanyCatalog = {
+    id: createId('catalog'),
+    companyId,
+    name,
+    slug: `${slugBase}-${Date.now().toString().slice(-4)}`,
+    designPresetId: 'clean-wholesale',
+    isReleasedToRepresentatives: false,
+    productsCount: 0,
+  }
+
+  saveCompanyCatalogs([...getCompanyCatalogs(), catalog])
+
+  return catalog
+}
+
+export function getCompanyProducts() {
+  return [] as Product[]
+}
+
+export function getCompanyRecentClients() {
+  return [] as Array<never>
 }
 
 export function registerAutonomousRepresentative(

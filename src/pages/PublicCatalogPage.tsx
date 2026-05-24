@@ -6,6 +6,7 @@ import {
   products,
   selectedCatalogDesignId,
 } from '../data/mock'
+import { getCatalogBySlug } from '../lib/mockStore'
 
 export function PublicCatalogPage() {
   const { catalogSlug, shareCode } = useParams()
@@ -14,9 +15,14 @@ export function PublicCatalogPage() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null,
   )
+  const catalog = getCatalogBySlug(catalogSlug ?? '')
+  const catalogProducts = useMemo(
+    () => (catalog?.productsCount ? products : []),
+    [catalog?.productsCount],
+  )
   const selectedProduct = useMemo(
-    () => products.find((product) => product.id === selectedProductId),
-    [selectedProductId],
+    () => catalogProducts.find((product) => product.id === selectedProductId),
+    [catalogProducts, selectedProductId],
   )
   const selectedDesign =
     catalogDesignPresets.find((design) => design.id === selectedCatalogDesignId) ??
@@ -94,7 +100,7 @@ export function PublicCatalogPage() {
               {selectedDesign.name}
             </p>
             <h1 className="truncate text-lg font-semibold">
-              Catalogo Utilidades 2026
+              {catalog?.name ?? 'Catalogo indisponivel'}
             </h1>
             <p className="truncate text-xs text-slate-500">
               {catalogSlug} - {shareCode ?? 'link direto'}
@@ -126,7 +132,7 @@ export function PublicCatalogPage() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
+          {catalogProducts.map((product) => (
             <article
               className="overflow-hidden rounded-lg border border-slate-200 shadow-sm"
               key={product.id}
@@ -170,6 +176,16 @@ export function PublicCatalogPage() {
             </article>
           ))}
         </div>
+        {!catalogProducts.length ? (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-950">
+              Nenhum produto publicado
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+              Este catalogo ainda nao possui produtos publicados.
+            </p>
+          </div>
+        ) : null}
       </section>
 
       {selectedProduct ? (

@@ -1,17 +1,58 @@
-import { ArrowUpRight, Copy, MessageCircle, Plus } from 'lucide-react'
+import { Boxes, FileText, Gauge, Plus, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { MetricCard } from '../components/MetricCard'
 import { PageHeader } from '../components/PageHeader'
-import { ProductCard } from '../components/ProductCard'
-import { metrics, products, recentClients } from '../data/mock'
+import {
+  getCatalogsWithReleaseState,
+  getCompanyProducts,
+  getCompanyRecentClients,
+  getCompanyRepresentativeLinks,
+  getCurrentCompany,
+} from '../lib/mockStore'
 
 export function CompanyDashboardPage() {
+  const company = getCurrentCompany()
+  const catalogs = getCatalogsWithReleaseState(company?.id ?? '')
+  const products = getCompanyProducts()
+  const recentClients = getCompanyRecentClients()
+  const representatives = getCompanyRepresentativeLinks(company?.id ?? '')
+  const metrics = [
+    {
+      label: 'Catalogos ativos',
+      value: String(catalogs.length),
+      trend: `${catalogs.filter((catalog) => catalog.isReleasedToRepresentatives).length} liberados para reps`,
+      icon: FileText,
+      tone: 'bg-teal-50 text-teal-700',
+    },
+    {
+      label: 'Produtos',
+      value: String(products.length),
+      trend: 'Nenhum produto cadastrado',
+      icon: Boxes,
+      tone: 'bg-amber-50 text-amber-700',
+    },
+    {
+      label: 'Representantes',
+      value: String(representatives.length),
+      trend: 'Vinculos ativos',
+      icon: Users,
+      tone: 'bg-sky-50 text-sky-700',
+    },
+    {
+      label: 'Clientes recentes',
+      value: String(recentClients.length),
+      trend: 'Sem visitas ainda',
+      icon: Gauge,
+      tone: 'bg-rose-50 text-rose-700',
+    },
+  ]
+
   return (
     <>
       <PageHeader
         eyebrow="Painel da empresa"
         title="Operacao do catalogo"
-        description="Visao de catalogos publicados, clientes recentes, produtos com maior atencao e uso do plano."
+        description="Empresa recem-cadastrada comeca em branco: sem produtos, clientes, catalogos ou representantes."
         action={
           <Link
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white shadow-sm hover:bg-teal-800"
@@ -28,70 +69,22 @@ export function CompanyDashboardPage() {
         ))}
       </section>
       <section className="grid gap-5 px-5 pb-6 sm:px-6 xl:grid-cols-[1fr_380px]">
-        <div>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-950">
-              Produtos com maior atencao
-            </h2>
-            <Link
-              className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700"
-              to="/app/products"
-            >
-              Ver todos
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          </div>
-          <div className="grid gap-3">
-            {products.slice(0, 3).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-        <div>
-          <h2 className="mb-3 text-lg font-semibold text-slate-950">
-            Clientes recentes
+        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-950">
+            Nenhum produto cadastrado
           </h2>
-          <div className="space-y-3">
-            {recentClients.map((client) => (
-              <article
-                className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-                key={client.name}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-semibold text-slate-950">
-                      {client.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {client.catalog} · {client.time}
-                    </p>
-                  </div>
-                  <span className="rounded-md bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700">
-                    {client.interest}
-                  </span>
-                </div>
-                <p className="mt-4 text-sm text-slate-600">
-                  Possivel interesse em {client.product}.
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <button
-                    className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md border border-slate-200 text-sm font-semibold text-slate-700 hover:border-teal-600 hover:text-teal-700"
-                    type="button"
-                  >
-                    <Copy size={16} aria-hidden="true" />
-                    Copiar
-                  </button>
-                  <button
-                    className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md bg-[#1f9d68] text-sm font-semibold text-white hover:bg-[#168357]"
-                    type="button"
-                  >
-                    <MessageCircle size={16} aria-hidden="true" />
-                    WhatsApp
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+            Cadastre produtos e imagens para montar os primeiros catalogos.
+          </p>
+        </div>
+        <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-950">
+            Nenhum cliente recente
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            As visitas vao aparecer aqui depois que um catalogo publico for
+            compartilhado e acessado.
+          </p>
         </div>
       </section>
     </>

@@ -1,8 +1,7 @@
-import { Copy, Link2, LogOut, MessageCircle, Send, UserPlus } from 'lucide-react'
+import { Copy, Link2, LogOut, Send, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Brand } from '../components/Brand'
-import { products, recentClients } from '../data/mock'
 import {
   clearCurrentRepresentative,
   getCurrentRepresentative,
@@ -208,66 +207,14 @@ export function RepresentativeDashboardPage() {
                   )}
                 </div>
               </div>
-
-              <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_320px]">
-                <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                  <h2 className="font-semibold text-slate-950">
-                    Produtos com possivel interesse
-                  </h2>
-                  <div className="mt-4 space-y-3">
-                    {products.slice(0, 3).map((product) => (
-                      <div
-                        className="flex items-center gap-3 rounded-md bg-slate-50 p-3"
-                        key={product.id}
-                      >
-                        <img
-                          alt={product.title}
-                          className="size-14 rounded-md object-cover"
-                          height="56"
-                          loading="lazy"
-                          src={product.image}
-                          width="56"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-semibold text-slate-900">
-                            {product.title}
-                          </p>
-                          <p className="text-sm text-slate-500">
-                            {product.attention}% de atencao
-                          </p>
-                        </div>
-                        <MessageCircle
-                          className="text-emerald-700"
-                          size={18}
-                          aria-hidden="true"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-                <aside>
-                  <h2 className="mb-3 text-lg font-semibold text-slate-950">
-                    Clientes recentes
-                  </h2>
-                  <div className="space-y-3">
-                    {recentClients.map((client) => (
-                      <article
-                        className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-                        key={client.name}
-                      >
-                        <h3 className="font-semibold text-slate-950">
-                          {client.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-500">
-                          {client.time} - {client.catalog}
-                        </p>
-                        <p className="mt-3 text-sm text-slate-700">
-                          Possivel interesse em {client.product}.
-                        </p>
-                      </article>
-                    ))}
-                  </div>
-                </aside>
+              <div className="mt-5 rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-950">
+                  Sem clientes ou interesse ainda
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                  Os sinais de interesse so aparecem depois que clientes finais
+                  acessarem catalogos compartilhados por este representante.
+                </p>
               </div>
             </>
           )}

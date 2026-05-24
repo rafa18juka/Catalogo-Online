@@ -1,15 +1,17 @@
 import { Filter, Plus, Upload } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
 import { ProductCard } from '../components/ProductCard'
-import { products } from '../data/mock'
+import { getCompanyProducts } from '../lib/mockStore'
 
 export function ProductsPage() {
+  const products = getCompanyProducts()
+
   return (
     <>
       <PageHeader
         eyebrow="Produtos"
         title="Cadastro e imagens"
-        description="Base para cadastrar SKU, categoria, preco, estoque e preparar imagens otimizadas para publicacao."
+        description="A empresa comeca sem produtos. O cadastro real entra nesta area."
         action={
           <div className="flex flex-wrap gap-2">
             <button
@@ -44,11 +46,23 @@ export function ProductsPage() {
             Filtros
           </button>
         </div>
-        <div className="grid gap-3 xl:grid-cols-2">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {products.length ? (
+          <div className="grid gap-3 xl:grid-cols-2">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-950">
+              Nenhum produto cadastrado
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+              Os produtos de exemplo nao entram mais na conta da empresa. Eles
+              ficam apenas como assets de teste visual.
+            </p>
+          </div>
+        )}
       </section>
     </>
   )

@@ -62,14 +62,20 @@ Senha: CamilaAuto@123
 Fluxo recomendado de teste
 --------------------------
 1. Abra /portal e cadastre a empresa Aurora Casa Atacado.
-2. No painel da empresa, va em Representantes e clique em Gerar token.
-3. Cadastre a firma Ponte Sul Representacoes no portal de representantes.
-4. No painel da firma, cole o token da Aurora Casa e vincule.
-5. Ainda no painel da firma, cadastre Rafael Moreira Campos.
-6. Saia e entre com Rafael pelo login de representante.
-7. Rafael deve ver os catalogos liberados da Aurora Casa, pois pertence a firma.
-8. Cadastre Camila como representante autonoma.
-9. Gere outro token na empresa Aurora Casa.
-10. Entre como Camila, cole o token e vincule.
-11. Camila deve ver somente os catalogos liberados da Aurora Casa.
-12. Na empresa, va em Representantes e use Revogar para remover o acesso.
+2. Confira que o painel da empresa abriu zerado: sem produtos, sem clientes,
+   sem catalogos e sem representantes.
+3. Va em Catalogos e clique em Criar catalogo se quiser testar liberacao.
+   O catalogo nasce vazio, com 0 produtos.
+4. Ative o toggle Liberar no catalogo criado.
+5. Va em Representantes e clique em Gerar token.
+6. Cadastre a firma Ponte Sul Representacoes no portal de representantes.
+7. No painel da firma, cole o token da Aurora Casa e vincule.
+8. Ainda no painel da firma, cadastre Rafael Moreira Campos.
+9. Saia e entre com Rafael pelo login de representante.
+10. Rafael deve ver que pertence a Ponte Sul e deve enxergar apenas catalogos
+    liberados pela Aurora Casa.
+11. Cadastre Camila como representante autonoma.
+12. Gere outro token na empresa Aurora Casa.
+13. Entre como Camila, cole o token e vincule.
+14. Camila deve ver somente os catalogos liberados da Aurora Casa.
+15. Na empresa, va em Representantes e use Revogar para remover o acesso.
