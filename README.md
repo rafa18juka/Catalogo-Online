@@ -30,6 +30,20 @@ VITE_SUPABASE_ANON_KEY=
 
 As migracoes e RLS entram na proxima fase usando Supabase CLI.
 
+### CLI
+
+O Supabase CLI esta instalado como dependencia de desenvolvimento.
+
+Comandos principais:
+
+```bash
+npm run supabase -- --version
+npm run supabase:link -- --project-ref seu_project_ref
+npm run supabase:push
+```
+
+Para linkar e aplicar migracoes no projeto remoto, sera necessario autenticar o CLI com um token pessoal do Supabase.
+
 ## Rotas iniciais
 
 - `/app`: painel da empresa

@@ -1,0 +1,2 @@
+-- Seed data for local development will be added after the first real Supabase
+-- project is linked. Keep this file because supabase/config.toml references it.
