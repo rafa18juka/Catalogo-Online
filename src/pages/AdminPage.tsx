@@ -12,10 +12,11 @@ import {
 import { useState } from 'react'
 import { Brand } from '../components/Brand'
 import { DesignPreview } from '../components/DesignPreview'
-import { catalogDesignPresets } from '../data/mock'
 import {
+  createCatalogDesignPreset,
   getCompanyCatalogCount,
   getCompanies,
+  getCatalogDesignPresets,
   getRepresentationFirms,
   getRepresentativeLinks,
   getRepresentatives,
@@ -30,6 +31,17 @@ const devEvents = [
 
 export function AdminPage() {
   const [manualCompanyName, setManualCompanyName] = useState('')
+  const [designs, setDesigns] = useState(getCatalogDesignPresets())
+  const [designForm, setDesignForm] = useState({
+    name: '',
+    audience: '',
+    description: '',
+    primaryColor: '#0f766e',
+    accentColor: '#d97706',
+    backgroundColor: '#f6f7f2',
+    surfaceColor: '#ffffff',
+    textColor: '#0f172a',
+  })
   const links = getRepresentativeLinks()
   const companies = getCompanies()
   const representatives = getRepresentatives()
@@ -46,6 +58,29 @@ export function AdminPage() {
     ['Vinculos ativos', String(links.length), RadioTower, 'text-rose-700'],
     ['Storage usado', '88 GB', HardDrive, 'text-amber-700'],
   ] as const
+
+  function updateDesignField(name: keyof typeof designForm, value: string) {
+    setDesignForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function handleCreateDesign() {
+    if (!designForm.name) return
+
+    createCatalogDesignPreset({
+      name: designForm.name,
+      audience: designForm.audience || 'Empresas gerais',
+      description: designForm.description || 'Preset criado pelo painel dev.',
+      coverStyle: 'Cabecalho configuravel',
+      gridStyle: 'Grade de cards',
+      primaryColor: designForm.primaryColor,
+      accentColor: designForm.accentColor,
+      backgroundColor: designForm.backgroundColor,
+      surfaceColor: designForm.surfaceColor,
+      textColor: designForm.textColor,
+    })
+    setDesigns(getCatalogDesignPresets())
+    setDesignForm((current) => ({ ...current, name: '', audience: '', description: '' }))
+  }
 
   return (
     <main className="min-h-screen bg-[#f6f7f2]">
@@ -240,9 +275,65 @@ export function AdminPage() {
               </p>
             </section>
             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="font-semibold text-slate-950">Presets de design</h2>
+              <h2 className="font-semibold text-slate-950">Criador de design</h2>
+              <div className="mt-4 space-y-3">
+                <input
+                  className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
+                  onChange={(event) => updateDesignField('name', event.target.value)}
+                  placeholder="Nome do preset"
+                  value={designForm.name}
+                />
+                <input
+                  className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
+                  onChange={(event) =>
+                    updateDesignField('audience', event.target.value)
+                  }
+                  placeholder="Publico/segmento"
+                  value={designForm.audience}
+                />
+                <textarea
+                  className="min-h-20 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:bg-white"
+                  onChange={(event) =>
+                    updateDesignField('description', event.target.value)
+                  }
+                  placeholder="Descricao"
+                  value={designForm.description}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      ['primaryColor', 'Primaria'],
+                      ['accentColor', 'Destaque'],
+                      ['backgroundColor', 'Fundo'],
+                      ['surfaceColor', 'Cards'],
+                      ['textColor', 'Texto'],
+                    ] as const
+                  ).map(([name, label]) => (
+                    <label className="text-sm font-semibold text-slate-700" key={name}>
+                      {label}
+                      <input
+                        className="mt-2 h-10 w-full rounded-md border border-slate-200"
+                        onChange={(event) => updateDesignField(name, event.target.value)}
+                        type="color"
+                        value={designForm[name]}
+                      />
+                    </label>
+                  ))}
+                </div>
+                <button
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
+                  onClick={handleCreateDesign}
+                  type="button"
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  Criar design
+                </button>
+              </div>
+            </section>
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="font-semibold text-slate-950">Presets publicados</h2>
               <div className="mt-4 space-y-4">
-                {catalogDesignPresets.slice(0, 2).map((design) => (
+                {designs.slice(0, 3).map((design) => (
                   <DesignPreview design={design} key={design.id} />
                 ))}
               </div>

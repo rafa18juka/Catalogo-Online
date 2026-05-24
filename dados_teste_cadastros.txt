@@ -16,7 +16,7 @@ Responsavel: Beatriz Nogueira Martins
 CPF do responsavel: 935.411.860-08
 Telefone: +55 11 94567-1200
 Endereco: Rua das Magnolias, 1280, Vila Mariana, Sao Paulo - SP
-Plano: Pro
+Plano: Starter
 Email de login: empresa@auroracasa.test
 Senha: AuroraCasa@123
 
@@ -64,18 +64,19 @@ Fluxo recomendado de teste
 1. Abra /portal e cadastre a empresa Aurora Casa Atacado.
 2. Confira que o painel da empresa abriu zerado: sem produtos, sem clientes,
    sem catalogos e sem representantes.
-3. Va em Catalogos e clique em Criar catalogo se quiser testar liberacao.
+3. Va em Produtos e cadastre o primeiro produto com ate 5 imagens.
+4. Va em Catalogos e clique em Criar catalogo se quiser testar liberacao.
    O catalogo nasce vazio, com 0 produtos.
-4. Ative o toggle Liberar no catalogo criado.
-5. Va em Representantes e clique em Gerar token.
-6. Cadastre a firma Ponte Sul Representacoes no portal de representantes.
-7. No painel da firma, cole o token da Aurora Casa e vincule.
-8. Ainda no painel da firma, cadastre Rafael Moreira Campos.
-9. Saia e entre com Rafael pelo login de representante.
-10. Rafael deve ver que pertence a Ponte Sul e deve enxergar apenas catalogos
+5. Ative o toggle Liberar no catalogo criado.
+6. Va em Representantes e clique em Gerar token.
+7. Cadastre a firma Ponte Sul Representacoes no portal de representantes.
+8. No painel da firma, cole o token da Aurora Casa e vincule.
+9. Ainda no painel da firma, cadastre Rafael Moreira Campos.
+10. Saia e entre com Rafael pelo login de representante.
+11. Rafael deve ver que pertence a Ponte Sul e deve enxergar apenas catalogos
     liberados pela Aurora Casa.
-11. Cadastre Camila como representante autonoma.
-12. Gere outro token na empresa Aurora Casa.
-13. Entre como Camila, cole o token e vincule.
-14. Camila deve ver somente os catalogos liberados da Aurora Casa.
-15. Na empresa, va em Representantes e use Revogar para remover o acesso.
+12. Cadastre Camila como representante autonoma.
+13. Gere outro token na empresa Aurora Casa.
+14. Entre como Camila, cole o token e vincule.
+15. Camila deve ver somente os catalogos liberados da Aurora Casa.
+16. Na empresa, va em Representantes e use Revogar para remover o acesso.

@@ -22,7 +22,6 @@ export function CompanyAuthPage() {
     password: '',
     phone: '',
     address: '',
-    plan: 'Starter',
     stripeCustomerId: '',
     stripeSubscriptionId: '',
   })
@@ -64,7 +63,7 @@ export function CompanyAuthPage() {
       password: form.password,
       phone: form.phone,
       address: form.address,
-      plan: form.plan,
+      plan: 'Starter',
       stripeCustomerId: form.stripeCustomerId || undefined,
     })
 
@@ -114,11 +113,6 @@ export function CompanyAuthPage() {
               label="Endereco"
               onChange={(value) => updateField('address', value)}
               value={form.address}
-            />
-            <Field
-              label="Plano"
-              onChange={(value) => updateField('plan', value)}
-              value={form.plan}
             />
           </div>
         ) : null}

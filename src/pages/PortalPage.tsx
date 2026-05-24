@@ -1,4 +1,4 @@
-import { Building2, Shield, UserRound } from 'lucide-react'
+import { Building2, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 
@@ -42,13 +42,6 @@ export function PortalPage() {
             </p>
           </Link>
         </div>
-        <Link
-          className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:border-teal-600 hover:text-teal-700"
-          to="/dev"
-        >
-          <Shield size={16} aria-hidden="true" />
-          Dev/admin
-        </Link>
       </section>
     </main>
   )

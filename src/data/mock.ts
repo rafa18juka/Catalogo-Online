@@ -13,12 +13,15 @@ import {
 
 export type Product = {
   id: string
+  companyId?: string
   title: string
   sku: string
   category: string
+  description?: string
   status: string
   price: string
   image: string
+  images?: string[]
   attention: number
 }
 

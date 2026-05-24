@@ -1,6 +1,8 @@
 import {
   companies as initialCompanies,
+  catalogDesignPresets as initialCatalogDesignPresets,
   companyCatalogs as initialCatalogs,
+  type CatalogDesignPreset,
   representationFirms as initialRepresentationFirms,
   representatives as initialRepresentatives,
   type CompanyAccount,
@@ -22,6 +24,8 @@ const companiesKey = `${storagePrefix}companies`
 const representativesKey = `${storagePrefix}representatives`
 const representationFirmsKey = `${storagePrefix}representationFirms`
 const catalogsKey = `${storagePrefix}companyCatalogs`
+const productsKey = `${storagePrefix}products`
+const designsKey = `${storagePrefix}catalogDesignPresets`
 
 type InviteToken = {
   token: string
@@ -77,6 +81,8 @@ export function resetMockData() {
     representativesKey,
     representationFirmsKey,
     catalogsKey,
+    productsKey,
+    designsKey,
   ].forEach((key) => window.localStorage.removeItem(key))
 }
 
@@ -115,6 +121,29 @@ export function saveCompanyCatalogs(catalogs: CompanyCatalog[]) {
   writeJson(catalogsKey, catalogs)
 }
 
+export function getCatalogDesignPresets() {
+  return readJson<CatalogDesignPreset[]>(designsKey, initialCatalogDesignPresets)
+}
+
+export function saveCatalogDesignPresets(designs: CatalogDesignPreset[]) {
+  writeJson(designsKey, designs)
+}
+
+export function createCatalogDesignPreset(
+  design: Omit<CatalogDesignPreset, 'id' | 'status' | 'previewImage'>,
+) {
+  const newDesign: CatalogDesignPreset = {
+    ...design,
+    id: createId('design'),
+    status: 'Publicado',
+    previewImage: '/sample-products/esponja-1.png',
+  }
+
+  saveCatalogDesignPresets([newDesign, ...getCatalogDesignPresets()])
+
+  return newDesign
+}
+
 export function registerCompany(
   company: Omit<CompanyAccount, 'id' | 'paymentStatus' | 'accessSource'>,
 ) {
@@ -148,7 +177,36 @@ export function createCompanyCatalog(companyId: string, name = 'Novo catalogo') 
 }
 
 export function getCompanyProducts() {
-  return [] as Product[]
+  const company = getCurrentCompany()
+
+  if (!company) return [] as Product[]
+
+  return readJson<Product[]>(productsKey, []).filter(
+    (product) => product.companyId === company.id,
+  )
+}
+
+export function saveProducts(products: Product[]) {
+  writeJson(productsKey, products)
+}
+
+export function createCompanyProduct(
+  product: Omit<Product, 'id' | 'companyId' | 'attention'>,
+) {
+  const company = getCurrentCompany()
+
+  if (!company) return null
+
+  const newProduct: Product = {
+    ...product,
+    id: createId('product'),
+    companyId: company.id,
+    attention: 0,
+  }
+
+  saveProducts([newProduct, ...readJson<Product[]>(productsKey, [])])
+
+  return newProduct
 }
 
 export function getCompanyRecentClients() {

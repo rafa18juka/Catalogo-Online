@@ -1,12 +1,12 @@
 import { CheckCircle2, Eye, Palette } from 'lucide-react'
 import { DesignPreview } from '../components/DesignPreview'
 import { PageHeader } from '../components/PageHeader'
-import {
-  catalogDesignPresets,
-  selectedCatalogDesignId,
-} from '../data/mock'
+import { selectedCatalogDesignId } from '../data/mock'
+import { getCatalogDesignPresets } from '../lib/mockStore'
 
 export function CompanyDesignsPage() {
+  const catalogDesignPresets = getCatalogDesignPresets()
+
   return (
     <>
       <PageHeader
