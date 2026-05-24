@@ -7,8 +7,18 @@ import { createCompanyProduct, getCompanyProducts } from '../lib/mockStore'
 type ProductForm = {
   title: string
   sku: string
+  internalCode: string
   category: string
   description: string
+  ean: string
+  ncm: string
+  measurements: string
+  weight: string
+  masterBox: string
+  minimumOrder: string
+  observations: string
+  variations: string
+  stock: string
   price: string
   status: string
   images: string[]
@@ -17,8 +27,18 @@ type ProductForm = {
 const emptyForm: ProductForm = {
   title: '',
   sku: '',
+  internalCode: '',
   category: '',
   description: '',
+  ean: '',
+  ncm: '',
+  measurements: '',
+  weight: '',
+  masterBox: '',
+  minimumOrder: '',
+  observations: '',
+  variations: '',
+  stock: '',
   price: '',
   status: 'Disponivel',
   images: [],
@@ -61,8 +81,18 @@ export function ProductsPage() {
     createCompanyProduct({
       title: form.title,
       sku: form.sku,
+      internalCode: form.internalCode,
       category: form.category,
       description: form.description,
+      ean: form.ean,
+      ncm: form.ncm,
+      measurements: form.measurements,
+      weight: form.weight,
+      masterBox: form.masterBox,
+      minimumOrder: form.minimumOrder,
+      observations: form.observations,
+      variations: form.variations,
+      stock: form.stock,
       price: form.price ? `R$ ${form.price}` : 'Sem preco',
       status: form.status,
       image: form.images[0] ?? '/sample-products/esponja-1.png',
@@ -114,6 +144,11 @@ export function ProductsPage() {
               value={form.sku}
             />
             <Field
+              label="Codigo interno"
+              onChange={(value) => updateField('internalCode', value)}
+              value={form.internalCode}
+            />
+            <Field
               label="Categoria"
               onChange={(value) => updateField('category', value)}
               value={form.category}
@@ -128,6 +163,46 @@ export function ProductsPage() {
               onChange={(value) => updateField('status', value)}
               value={form.status}
             />
+            <Field
+              label="EAN"
+              onChange={(value) => updateField('ean', value)}
+              value={form.ean}
+            />
+            <Field
+              label="NCM"
+              onChange={(value) => updateField('ncm', value)}
+              value={form.ncm}
+            />
+            <Field
+              label="Medidas"
+              onChange={(value) => updateField('measurements', value)}
+              value={form.measurements}
+            />
+            <Field
+              label="Peso"
+              onChange={(value) => updateField('weight', value)}
+              value={form.weight}
+            />
+            <Field
+              label="Caixa master"
+              onChange={(value) => updateField('masterBox', value)}
+              value={form.masterBox}
+            />
+            <Field
+              label="Pedido minimo"
+              onChange={(value) => updateField('minimumOrder', value)}
+              value={form.minimumOrder}
+            />
+            <Field
+              label="Estoque"
+              onChange={(value) => updateField('stock', value)}
+              value={form.stock}
+            />
+            <Field
+              label="Variacoes"
+              onChange={(value) => updateField('variations', value)}
+              value={form.variations}
+            />
           </div>
           <label className="mt-4 block">
             <span className="text-sm font-semibold text-slate-700">
@@ -137,6 +212,16 @@ export function ProductsPage() {
               className="mt-2 min-h-24 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:bg-white"
               onChange={(event) => updateField('description', event.target.value)}
               value={form.description}
+            />
+          </label>
+          <label className="mt-4 block">
+            <span className="text-sm font-semibold text-slate-700">
+              Observacoes
+            </span>
+            <textarea
+              className="mt-2 min-h-20 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:bg-white"
+              onChange={(event) => updateField('observations', event.target.value)}
+              value={form.observations}
             />
           </label>
           <label className="mt-4 block rounded-lg border border-dashed border-slate-300 p-4 text-center">

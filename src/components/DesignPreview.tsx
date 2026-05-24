@@ -6,6 +6,9 @@ type DesignPreviewProps = {
 }
 
 export function DesignPreview({ design }: DesignPreviewProps) {
+  const shouldUseUploadedPreview =
+    design.sourceType === 'design_pack' || design.previewKind === 'svg'
+
   return (
     <div
       className="overflow-hidden rounded-lg border border-slate-200 shadow-sm"
@@ -23,6 +26,16 @@ export function DesignPreview({ design }: DesignPreviewProps) {
         </p>
         <h3 className="mt-1 text-lg font-semibold">{design.name}</h3>
       </div>
+      {shouldUseUploadedPreview ? (
+        <img
+          alt={design.name}
+          className="aspect-[16/10] w-full bg-white object-cover"
+          height="320"
+          loading="lazy"
+          src={design.previewImage}
+          width="512"
+        />
+      ) : (
       <div className="grid grid-cols-2 gap-3 p-3">
         {products.slice(0, 2).map((product) => (
           <article
@@ -50,6 +63,7 @@ export function DesignPreview({ design }: DesignPreviewProps) {
           </article>
         ))}
       </div>
+      )}
     </div>
   )
 }

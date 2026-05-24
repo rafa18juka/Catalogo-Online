@@ -1,6 +1,8 @@
+import JSZip from 'jszip'
 import {
   AlertTriangle,
   Building2,
+  CheckCircle2,
   CreditCard,
   Database,
   HardDrive,
@@ -13,6 +15,12 @@ import { useState } from 'react'
 import { Brand } from '../components/Brand'
 import { DesignPreview } from '../components/DesignPreview'
 import {
+  defaultProductDisplayOptions,
+  productDisplayFields,
+  type CatalogDesignPreset,
+  type ProductDisplayOptions,
+} from '../data/mock'
+import {
   createCatalogDesignPreset,
   getCompanyCatalogCount,
   getCompanies,
@@ -20,28 +28,105 @@ import {
   getRepresentationFirms,
   getRepresentativeLinks,
   getRepresentatives,
+  updateCatalogDesignPresetStatus,
 } from '../lib/mockStore'
 
 const devEvents = [
-  'Empresa Casa Verde Atacado aguardando catalogos liberados para reps',
   'Stripe pronto para webhook de confirmacao de assinatura',
   'Representante sem vinculo nao visualiza catalogos',
-  'Upload de design publicado como preset Atacado Limpo',
+  'Design Pack importado sempre entra como rascunho',
+  'Templates publicados precisam suportar todos os campos principais',
 ]
+
+type ImportReport = {
+  name: string
+  status: CatalogDesignPreset['status']
+  files: string[]
+  missingFields: string[]
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readString(
+  source: Record<string, unknown> | undefined,
+  key: string,
+  fallback = '',
+) {
+  const value = source?.[key]
+
+  return typeof value === 'string' ? value : fallback
+}
+
+async function readZipJson(
+  zip: JSZip,
+  path: string,
+): Promise<Record<string, unknown>> {
+  const file = zip.file(path)
+
+  if (!file) throw new Error(`Arquivo ${path} nao encontrado.`)
+
+  const raw = await file.async('string')
+  const parsed = JSON.parse(raw) as unknown
+
+  if (!isRecord(parsed)) {
+    throw new Error(`Arquivo ${path} precisa conter um objeto JSON.`)
+  }
+
+  return parsed
+}
+
+function normalizeDisplayOptions(value: unknown) {
+  const source = isRecord(value) ? value : {}
+  const missingFields: string[] = []
+  const options = productDisplayFields.reduce((current, field) => {
+    const fieldValue = source[field.key]
+
+    if (fieldValue !== true) {
+      missingFields.push(field.label)
+    }
+
+    return { ...current, [field.key]: fieldValue === false ? false : true }
+  }, {} as ProductDisplayOptions)
+
+  return { options, missingFields }
+}
+
+async function readPreview(zip: JSZip, path: string) {
+  const file = zip.file(path)
+
+  if (!file) return { previewImage: '/sample-products/esponja-1.png' }
+
+  if (path.endsWith('.svg')) {
+    const svg = await file.async('string')
+
+    return {
+      previewImage: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+      previewKind: 'svg' as const,
+    }
+  }
+
+  const extension = path.split('.').pop()?.toLowerCase() ?? 'png'
+  const contentType =
+    extension === 'jpg' || extension === 'jpeg'
+      ? 'image/jpeg'
+      : extension === 'webp'
+        ? 'image/webp'
+        : 'image/png'
+  const base64 = await file.async('base64')
+
+  return {
+    previewImage: `data:${contentType};base64,${base64}`,
+    previewKind: 'image' as const,
+  }
+}
 
 export function AdminPage() {
   const [manualCompanyName, setManualCompanyName] = useState('')
   const [designs, setDesigns] = useState(getCatalogDesignPresets())
-  const [designForm, setDesignForm] = useState({
-    name: '',
-    audience: '',
-    description: '',
-    primaryColor: '#0f766e',
-    accentColor: '#d97706',
-    backgroundColor: '#f6f7f2',
-    surfaceColor: '#ffffff',
-    textColor: '#0f172a',
-  })
+  const [packMessage, setPackMessage] = useState('')
+  const [importReport, setImportReport] = useState<ImportReport | null>(null)
   const links = getRepresentativeLinks()
   const companies = getCompanies()
   const representatives = getRepresentatives()
@@ -59,27 +144,92 @@ export function AdminPage() {
     ['Storage usado', '88 GB', HardDrive, 'text-amber-700'],
   ] as const
 
-  function updateDesignField(name: keyof typeof designForm, value: string) {
-    setDesignForm((current) => ({ ...current, [name]: value }))
+  async function handleDesignPackUpload(file: File | null) {
+    if (!file) return
+
+    try {
+      setPackMessage('Validando pacote...')
+      const zip = await JSZip.loadAsync(file)
+      const manifest = await readZipJson(zip, 'manifest.json')
+      const config = await readZipJson(zip, 'template.config.json')
+      const tokensFile = zip.file('design-tokens.schema.json')
+      const tokensSchemaJson = tokensFile
+        ? ((JSON.parse(await tokensFile.async('string')) as unknown) ?? {})
+        : {}
+      const manifestFiles = isRecord(manifest.files) ? manifest.files : {}
+      const previewPath =
+        readString(manifest, 'preview') ||
+        readString(manifestFiles, 'preview') ||
+        'previews/preview.svg'
+      const preview = await readPreview(zip, previewPath)
+      const packageType = readString(manifest, 'packageType')
+
+      if (packageType !== 'catalog_template_pack') {
+        throw new Error('O packageType precisa ser catalog_template_pack.')
+      }
+
+      const supports = normalizeDisplayOptions(config.supportsFields)
+      const defaults = normalizeDisplayOptions(
+        config.defaultDisplayOptions ?? defaultProductDisplayOptions,
+      )
+      const files = Object.keys(zip.files).filter((path) => !zip.files[path].dir)
+      const status: CatalogDesignPreset['status'] = 'Rascunho'
+      const design = createCatalogDesignPreset({
+        templateId:
+          readString(manifest, 'templateId') ||
+          readString(config, 'templateId') ||
+          file.name.replace(/\.zip$/i, ''),
+        packageVersion: readString(manifest, 'packageVersion', '1.0.0'),
+        sourceType: 'design_pack',
+        name: readString(config, 'clientVisibleName') || readString(manifest, 'name'),
+        audience: readString(manifest, 'audience', 'Empresas gerais'),
+        description:
+          readString(config, 'clientVisibleDescription') ||
+          readString(manifest, 'description', 'Design Pack importado pelo dev.'),
+        coverStyle: readString(config, 'layoutMode', 'HTML/CSS/SVG'),
+        gridStyle: readString(config, 'productLayout', 'Layout por componentes'),
+        primaryColor: '#0f766e',
+        accentColor: '#d97706',
+        backgroundColor: '#f6f7f2',
+        surfaceColor: '#ffffff',
+        textColor: '#0f172a',
+        status,
+        previewImage: preview.previewImage,
+        previewKind: preview.previewKind ?? 'generated',
+        supportsFields: supports.options,
+        defaultDisplayOptions: defaults.options,
+        manifestJson: manifest,
+        configJson: config,
+        tokensSchemaJson,
+        filesSummary: files,
+        importedAt: new Date().toISOString(),
+      })
+
+      setDesigns(getCatalogDesignPresets())
+      setImportReport({
+        name: design.name,
+        status,
+        files,
+        missingFields: supports.missingFields,
+      })
+      setPackMessage(
+        supports.missingFields.length
+          ? 'Pacote importado como rascunho. Revise os campos ausentes antes de publicar.'
+          : 'Pacote importado como rascunho e pronto para teste.',
+      )
+    } catch (error) {
+      setPackMessage(
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel importar o Design Pack.',
+      )
+      setImportReport(null)
+    }
   }
 
-  function handleCreateDesign() {
-    if (!designForm.name) return
-
-    createCatalogDesignPreset({
-      name: designForm.name,
-      audience: designForm.audience || 'Empresas gerais',
-      description: designForm.description || 'Preset criado pelo painel dev.',
-      coverStyle: 'Cabecalho configuravel',
-      gridStyle: 'Grade de cards',
-      primaryColor: designForm.primaryColor,
-      accentColor: designForm.accentColor,
-      backgroundColor: designForm.backgroundColor,
-      surfaceColor: designForm.surfaceColor,
-      textColor: designForm.textColor,
-    })
+  function handlePublishDesign(designId: string) {
+    updateCatalogDesignPresetStatus(designId, 'Publicado')
     setDesigns(getCatalogDesignPresets())
-    setDesignForm((current) => ({ ...current, name: '', audience: '', description: '' }))
   }
 
   return (
@@ -99,20 +249,25 @@ export function AdminPage() {
               Dev/admin
             </p>
             <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              Empresas, representantes, pagamentos e designs
+              Empresas, representantes, pagamentos e Design Packs
             </h1>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-              O dev observa o que empresas e representantes fazem, recebe logs,
-              libera usuarios manualmente e publica presets de catalogo.
+              O dev acompanha operacao, logs e pagamentos, importa pacotes de
+              design e publica templates validados para as empresas.
             </p>
           </div>
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
-            type="button"
-          >
+          <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800">
             <Upload size={18} aria-hidden="true" />
-            Upload de design
-          </button>
+            Importar Design Pack
+            <input
+              accept=".zip,application/zip"
+              className="sr-only"
+              onChange={(event) =>
+                void handleDesignPackUpload(event.target.files?.[0] ?? null)
+              }
+              type="file"
+            />
+          </label>
         </div>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -260,83 +415,125 @@ export function AdminPage() {
                 })}
               </div>
             </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="font-semibold text-slate-950">
+                Templates importados
+              </h2>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                {designs.map((design) => {
+                  const missingFields = productDisplayFields.filter(
+                    (field) => !design.supportsFields[field.key],
+                  )
+
+                  return (
+                    <article
+                      className="rounded-lg border border-slate-200 p-3"
+                      key={design.id}
+                    >
+                      <DesignPreview design={design} />
+                      <div className="mt-3 flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-semibold text-slate-950">
+                            {design.name}
+                          </h3>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {design.sourceType === 'design_pack'
+                              ? 'Design Pack importado'
+                              : 'Template manual'}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-md px-2 py-1 text-xs font-semibold ${
+                            design.status === 'Publicado'
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-amber-50 text-amber-700'
+                          }`}
+                        >
+                          {design.status}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                        {missingFields.length
+                          ? `Campos pendentes: ${missingFields
+                              .map((field) => field.label)
+                              .join(', ')}`
+                          : 'Suporta todos os campos principais.'}
+                      </p>
+                      {design.status === 'Rascunho' && !missingFields.length ? (
+                        <button
+                          className="mt-3 inline-flex h-9 items-center justify-center gap-2 rounded-md bg-teal-700 px-3 text-sm font-semibold text-white hover:bg-teal-800"
+                          onClick={() => handlePublishDesign(design.id)}
+                          type="button"
+                        >
+                          <CheckCircle2 size={16} aria-hidden="true" />
+                          Publicar
+                        </button>
+                      ) : null}
+                    </article>
+                  )
+                })}
+              </div>
+            </div>
           </section>
 
           <aside className="space-y-5">
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <Upload className="text-teal-700" size={22} aria-hidden="true" />
+              <h2 className="mt-4 font-semibold text-slate-950">
+                Importar Design Pack
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                O pacote deve conter manifest.json, template.config.json,
+                design-tokens.schema.json, preview, CSS e SVGs. JavaScript livre
+                fica fora do fluxo.
+              </p>
+              <label className="mt-4 inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 text-sm font-semibold text-slate-700 hover:border-teal-600 hover:text-teal-700">
+                <Upload size={18} aria-hidden="true" />
+                Selecionar .zip
+                <input
+                  accept=".zip,application/zip"
+                  className="sr-only"
+                  onChange={(event) =>
+                    void handleDesignPackUpload(event.target.files?.[0] ?? null)
+                  }
+                  type="file"
+                />
+              </label>
+              {packMessage ? (
+                <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                  {packMessage}
+                </p>
+              ) : null}
+              {importReport ? (
+                <div className="mt-3 rounded-lg border border-slate-200 p-3 text-sm">
+                  <p className="font-semibold text-slate-950">
+                    {importReport.name}
+                  </p>
+                  <p className="mt-1 text-slate-500">
+                    {importReport.files.length} arquivos encontrados
+                  </p>
+                  <p className="mt-1 text-slate-500">
+                    Status inicial: {importReport.status}
+                  </p>
+                  {importReport.missingFields.length ? (
+                    <p className="mt-2 text-amber-700">
+                      Faltam campos: {importReport.missingFields.join(', ')}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </section>
             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
               <CreditCard className="text-teal-700" size={22} aria-hidden="true" />
               <h2 className="mt-4 font-semibold text-slate-950">
                 Pre-conexao Stripe
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                O fluxo previsto e: compra do plano no site, webhook Stripe
-                confirma pagamento, empresa ganha acesso ao painel. Vendas por
-                WhatsApp podem ser liberadas manualmente aqui.
+                Compra do plano, webhook confirma pagamento pelo CNPJ e a
+                empresa ganha acesso. Vendas por WhatsApp entram por liberacao
+                manual.
               </p>
-            </section>
-            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="font-semibold text-slate-950">Criador de design</h2>
-              <div className="mt-4 space-y-3">
-                <input
-                  className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
-                  onChange={(event) => updateDesignField('name', event.target.value)}
-                  placeholder="Nome do preset"
-                  value={designForm.name}
-                />
-                <input
-                  className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
-                  onChange={(event) =>
-                    updateDesignField('audience', event.target.value)
-                  }
-                  placeholder="Publico/segmento"
-                  value={designForm.audience}
-                />
-                <textarea
-                  className="min-h-20 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-600 focus:bg-white"
-                  onChange={(event) =>
-                    updateDesignField('description', event.target.value)
-                  }
-                  placeholder="Descricao"
-                  value={designForm.description}
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  {(
-                    [
-                      ['primaryColor', 'Primaria'],
-                      ['accentColor', 'Destaque'],
-                      ['backgroundColor', 'Fundo'],
-                      ['surfaceColor', 'Cards'],
-                      ['textColor', 'Texto'],
-                    ] as const
-                  ).map(([name, label]) => (
-                    <label className="text-sm font-semibold text-slate-700" key={name}>
-                      {label}
-                      <input
-                        className="mt-2 h-10 w-full rounded-md border border-slate-200"
-                        onChange={(event) => updateDesignField(name, event.target.value)}
-                        type="color"
-                        value={designForm[name]}
-                      />
-                    </label>
-                  ))}
-                </div>
-                <button
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
-                  onClick={handleCreateDesign}
-                  type="button"
-                >
-                  <Plus size={16} aria-hidden="true" />
-                  Criar design
-                </button>
-              </div>
-            </section>
-            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="font-semibold text-slate-950">Presets publicados</h2>
-              <div className="mt-4 space-y-4">
-                {designs.slice(0, 3).map((design) => (
-                  <DesignPreview design={design} key={design.id} />
-                ))}
-              </div>
             </section>
             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="font-semibold text-slate-950">Atividade recente</h2>

@@ -1,11 +1,10 @@
 import { CheckCircle2, Eye, Palette } from 'lucide-react'
 import { DesignPreview } from '../components/DesignPreview'
 import { PageHeader } from '../components/PageHeader'
-import { selectedCatalogDesignId } from '../data/mock'
-import { getCatalogDesignPresets } from '../lib/mockStore'
+import { getPublishedCatalogDesignPresets } from '../lib/mockStore'
 
 export function CompanyDesignsPage() {
-  const catalogDesignPresets = getCatalogDesignPresets()
+  const catalogDesignPresets = getPublishedCatalogDesignPresets()
 
   return (
     <>
@@ -17,7 +16,7 @@ export function CompanyDesignsPage() {
       <section className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[1fr_360px]">
         <div className="grid gap-4 lg:grid-cols-2">
           {catalogDesignPresets.map((design) => {
-            const isSelected = design.id === selectedCatalogDesignId
+            const isSelected = false
 
             return (
               <article
@@ -67,12 +66,12 @@ export function CompanyDesignsPage() {
           <h2 className="font-semibold text-slate-950">Como funciona</h2>
           <div className="mt-4 space-y-4 text-sm leading-6 text-slate-600">
             <p>
-              O dev cria e publica presets de design. A empresa escolhe um
-              preset por catalogo e publica uma versao.
+              O dev importa Design Packs, testa e publica templates. A empresa
+              escolhe um template por catalogo.
             </p>
             <p>
-              O catalogo online carrega o manifesto publicado com produtos,
-              imagens otimizadas e o preset escolhido.
+              Os templates suportam todos os campos principais. Cada catalogo
+              guarda os toggles que ocultam preco, EAN, NCM ou outros dados.
             </p>
             <p>
               Representantes compartilham o link da empresa, sem controlar o

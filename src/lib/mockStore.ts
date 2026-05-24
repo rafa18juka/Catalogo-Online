@@ -2,18 +2,20 @@ import {
   companies as initialCompanies,
   catalogDesignPresets as initialCatalogDesignPresets,
   companyCatalogs as initialCatalogs,
+  defaultProductDisplayOptions,
   type CatalogDesignPreset,
   representationFirms as initialRepresentationFirms,
   representatives as initialRepresentatives,
   type CompanyAccount,
   type CompanyCatalog,
   type Product,
+  type ProductDisplayOptions,
   type RepresentationFirmAccount,
   type RepresentativeAccount,
   type RepresentativeLink,
 } from '../data/mock'
 
-const storagePrefix = 'catalogo.v2.'
+const storagePrefix = 'catalogo.v3.'
 const companySessionKey = `${storagePrefix}companySession`
 const representativeSessionKey = `${storagePrefix}representativeSession`
 const representationFirmSessionKey = `${storagePrefix}representationFirmSession`
@@ -130,18 +132,50 @@ export function saveCatalogDesignPresets(designs: CatalogDesignPreset[]) {
 }
 
 export function createCatalogDesignPreset(
-  design: Omit<CatalogDesignPreset, 'id' | 'status' | 'previewImage'>,
+  design: Omit<
+    CatalogDesignPreset,
+    'id' | 'status' | 'previewImage' | 'supportsFields' | 'defaultDisplayOptions'
+  > &
+    Partial<
+      Pick<
+        CatalogDesignPreset,
+        | 'status'
+        | 'previewImage'
+        | 'supportsFields'
+        | 'defaultDisplayOptions'
+        | 'previewKind'
+      >
+    >,
 ) {
   const newDesign: CatalogDesignPreset = {
     ...design,
     id: createId('design'),
-    status: 'Publicado',
-    previewImage: '/sample-products/esponja-1.png',
+    status: design.status ?? 'Publicado',
+    previewImage: design.previewImage ?? '/sample-products/esponja-1.png',
+    previewKind: design.previewKind ?? 'generated',
+    supportsFields: design.supportsFields ?? defaultProductDisplayOptions,
+    defaultDisplayOptions:
+      design.defaultDisplayOptions ?? defaultProductDisplayOptions,
   }
 
   saveCatalogDesignPresets([newDesign, ...getCatalogDesignPresets()])
 
   return newDesign
+}
+
+export function getPublishedCatalogDesignPresets() {
+  return getCatalogDesignPresets().filter((design) => design.status === 'Publicado')
+}
+
+export function updateCatalogDesignPresetStatus(
+  designId: string,
+  status: CatalogDesignPreset['status'],
+) {
+  saveCatalogDesignPresets(
+    getCatalogDesignPresets().map((design) =>
+      design.id === designId ? { ...design, status } : design,
+    ),
+  )
 }
 
 export function registerCompany(
@@ -161,12 +195,16 @@ export function registerCompany(
 
 export function createCompanyCatalog(companyId: string, name = 'Novo catalogo') {
   const slugBase = slugify(name)
+  const selectedDesign =
+    getPublishedCatalogDesignPresets()[0] ?? getCatalogDesignPresets()[0]
   const catalog: CompanyCatalog = {
     id: createId('catalog'),
     companyId,
     name,
     slug: `${slugBase}-${Date.now().toString().slice(-4)}`,
-    designPresetId: 'clean-wholesale',
+    designPresetId: selectedDesign?.id ?? 'clean-wholesale',
+    displayOptions:
+      selectedDesign?.defaultDisplayOptions ?? defaultProductDisplayOptions,
     isReleasedToRepresentatives: false,
     productsCount: 0,
   }
@@ -181,8 +219,12 @@ export function getCompanyProducts() {
 
   if (!company) return [] as Product[]
 
+  return getCompanyProductsByCompanyId(company.id)
+}
+
+export function getCompanyProductsByCompanyId(companyId: string) {
   return readJson<Product[]>(productsKey, []).filter(
-    (product) => product.companyId === company.id,
+    (product) => product.companyId === companyId,
   )
 }
 
@@ -205,8 +247,49 @@ export function createCompanyProduct(
   }
 
   saveProducts([newProduct, ...readJson<Product[]>(productsKey, [])])
+  refreshCatalogProductCounts(company.id)
 
   return newProduct
+}
+
+export function refreshCatalogProductCounts(companyId: string) {
+  const productsCount = getCompanyProductsByCompanyId(companyId).length
+
+  saveCompanyCatalogs(
+    getCompanyCatalogs().map((catalog) =>
+      catalog.companyId === companyId ? { ...catalog, productsCount } : catalog,
+    ),
+  )
+}
+
+export function updateCompanyCatalogDesign(
+  catalogId: string,
+  designPresetId: string,
+) {
+  const design = getCatalogDesignPresets().find((item) => item.id === designPresetId)
+
+  saveCompanyCatalogs(
+    getCompanyCatalogs().map((catalog) =>
+      catalog.id === catalogId
+        ? {
+            ...catalog,
+            designPresetId,
+            displayOptions: design?.defaultDisplayOptions ?? catalog.displayOptions,
+          }
+        : catalog,
+    ),
+  )
+}
+
+export function updateCompanyCatalogDisplayOptions(
+  catalogId: string,
+  displayOptions: ProductDisplayOptions,
+) {
+  saveCompanyCatalogs(
+    getCompanyCatalogs().map((catalog) =>
+      catalog.id === catalogId ? { ...catalog, displayOptions } : catalog,
+    ),
+  )
 }
 
 export function getCompanyRecentClients() {
@@ -433,6 +516,8 @@ export function getCatalogsWithReleaseState(companyId: string) {
 
       return {
         ...catalog,
+        displayOptions: catalog.displayOptions ?? defaultProductDisplayOptions,
+        productsCount: getCompanyProductsByCompanyId(catalog.companyId).length,
         isReleasedToRepresentatives:
           override?.isReleasedToRepresentatives ??
           catalog.isReleasedToRepresentatives,

@@ -2,11 +2,39 @@ import { Check, Copy, MessageCircle, Search, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
-  catalogDesignPresets,
-  products,
-  selectedCatalogDesignId,
+  defaultProductDisplayOptions,
+  type Product,
+  type ProductDisplayOptions,
 } from '../data/mock'
-import { getCatalogBySlug } from '../lib/mockStore'
+import {
+  getCatalogBySlug,
+  getCatalogDesignPresets,
+  getCompanyProductsByCompanyId,
+} from '../lib/mockStore'
+
+function getProductInfo(product: Product, displayOptions: ProductDisplayOptions) {
+  return [
+    displayOptions.showSku && product.sku
+      ? ['SKU', product.sku]
+      : null,
+    displayOptions.showInternalCode && product.internalCode
+      ? ['Codigo', product.internalCode]
+      : null,
+    displayOptions.showEan && product.ean ? ['EAN', product.ean] : null,
+    displayOptions.showNcm && product.ncm ? ['NCM', product.ncm] : null,
+    displayOptions.showMeasurements && product.measurements
+      ? ['Medidas', product.measurements]
+      : null,
+    displayOptions.showWeight && product.weight ? ['Peso', product.weight] : null,
+    displayOptions.showMasterBox && product.masterBox
+      ? ['Caixa master', product.masterBox]
+      : null,
+    displayOptions.showMinimumOrder && product.minimumOrder
+      ? ['Pedido minimo', product.minimumOrder]
+      : null,
+    displayOptions.showStock && product.stock ? ['Estoque', product.stock] : null,
+  ].filter((item): item is [string, string] => Boolean(item))
+}
 
 export function PublicCatalogPage() {
   const { catalogSlug, shareCode } = useParams()
@@ -17,16 +45,17 @@ export function PublicCatalogPage() {
   )
   const catalog = getCatalogBySlug(catalogSlug ?? '')
   const catalogProducts = useMemo(
-    () => (catalog?.productsCount ? products : []),
-    [catalog?.productsCount],
+    () => (catalog ? getCompanyProductsByCompanyId(catalog.companyId) : []),
+    [catalog],
   )
   const selectedProduct = useMemo(
     () => catalogProducts.find((product) => product.id === selectedProductId),
     [catalogProducts, selectedProductId],
   )
+  const designs = getCatalogDesignPresets()
   const selectedDesign =
-    catalogDesignPresets.find((design) => design.id === selectedCatalogDesignId) ??
-    catalogDesignPresets[0]
+    designs.find((design) => design.id === catalog?.designPresetId) ?? designs[0]
+  const displayOptions = catalog?.displayOptions ?? defaultProductDisplayOptions
 
   if (!hasEntered) {
     return (
@@ -132,49 +161,87 @@ export function PublicCatalogPage() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {catalogProducts.map((product) => (
-            <article
-              className="overflow-hidden rounded-lg border border-slate-200 shadow-sm"
-              key={product.id}
-              style={{ backgroundColor: selectedDesign.surfaceColor }}
-            >
-              <button
-                className="block aspect-square w-full overflow-hidden bg-slate-100"
-                onClick={() => setSelectedProductId(product.id)}
-                type="button"
+          {catalogProducts.map((product) => {
+            const productInfo = getProductInfo(product, displayOptions)
+
+            return (
+              <article
+                className="overflow-hidden rounded-lg border border-slate-200 shadow-sm"
+                key={product.id}
+                style={{ backgroundColor: selectedDesign.surfaceColor }}
               >
-                <img
-                  alt={product.title}
-                  className="h-full w-full object-cover"
-                  height="480"
-                  loading="lazy"
-                  src={product.image}
-                  width="480"
-                />
-              </button>
-              <div className="p-3">
-                <h2 className="text-base font-semibold">{product.title}</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  {product.sku} - {product.category}
-                </p>
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <span
-                    className="font-semibold"
-                    style={{ color: selectedDesign.primaryColor }}
-                  >
-                    {product.price}
-                  </span>
+                {displayOptions.showProductImage && product.image ? (
                   <button
-                    className="grid size-9 place-items-center rounded-md border border-slate-200 text-slate-600"
-                    title="Copiar produto"
+                    className="block aspect-square w-full overflow-hidden bg-slate-100"
+                    onClick={() => setSelectedProductId(product.id)}
                     type="button"
                   >
-                    <Copy size={16} aria-hidden="true" />
+                    <img
+                      alt={product.title}
+                      className="h-full w-full object-cover"
+                      height="480"
+                      loading="lazy"
+                      src={product.image}
+                      width="480"
+                    />
                   </button>
+                ) : null}
+                <div className="flex min-h-44 flex-col gap-3 p-3">
+                  {displayOptions.showProductName && product.title ? (
+                    <h2 className="text-base font-semibold">{product.title}</h2>
+                  ) : null}
+                  <p className="text-sm text-slate-500">{product.category}</p>
+                  {productInfo.length ? (
+                    <dl className="grid gap-2 text-xs text-slate-600">
+                      {productInfo.map(([label, value]) => (
+                        <div
+                          className="flex items-start justify-between gap-3 rounded-md bg-slate-50 px-2 py-1"
+                          key={`${product.id}-${label}`}
+                        >
+                          <dt className="font-semibold text-slate-500">{label}</dt>
+                          <dd className="text-right text-slate-700">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
+                  {displayOptions.showDescription && product.description ? (
+                    <p className="text-sm leading-6 text-slate-600">
+                      {product.description}
+                    </p>
+                  ) : null}
+                  {displayOptions.showVariations && product.variations ? (
+                    <p className="text-sm text-slate-500">
+                      Variacoes: {product.variations}
+                    </p>
+                  ) : null}
+                  {displayOptions.showObservations && product.observations ? (
+                    <p className="text-sm text-slate-500">
+                      Obs.: {product.observations}
+                    </p>
+                  ) : null}
+                  <div className="mt-auto flex items-center justify-between gap-3">
+                    {displayOptions.showPrice && product.price ? (
+                      <span
+                        className="font-semibold"
+                        style={{ color: selectedDesign.primaryColor }}
+                      >
+                        {product.price}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    <button
+                      className="grid size-9 place-items-center rounded-md border border-slate-200 text-slate-600"
+                      title="Copiar produto"
+                      type="button"
+                    >
+                      <Copy size={16} aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            )
+          })}
         </div>
         {!catalogProducts.length ? (
           <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">

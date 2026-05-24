@@ -16,14 +16,71 @@ export type Product = {
   companyId?: string
   title: string
   sku: string
+  internalCode?: string
   category: string
   description?: string
+  ean?: string
+  ncm?: string
+  measurements?: string
+  weight?: string
+  masterBox?: string
+  minimumOrder?: string
+  observations?: string
+  variations?: string
+  stock?: string
   status: string
   price: string
   image: string
   images?: string[]
   attention: number
 }
+
+export type ProductDisplayOptions = {
+  showProductImage: boolean
+  showProductName: boolean
+  showPrice: boolean
+  showSku: boolean
+  showInternalCode: boolean
+  showEan: boolean
+  showNcm: boolean
+  showMeasurements: boolean
+  showWeight: boolean
+  showMasterBox: boolean
+  showMinimumOrder: boolean
+  showDescription: boolean
+  showObservations: boolean
+  showVariations: boolean
+  showStock: boolean
+}
+
+export type ProductDisplayOptionKey = keyof ProductDisplayOptions
+
+export const productDisplayFields: Array<{
+  key: ProductDisplayOptionKey
+  label: string
+}> = [
+  { key: 'showProductImage', label: 'Imagem' },
+  { key: 'showProductName', label: 'Nome' },
+  { key: 'showPrice', label: 'Preco' },
+  { key: 'showSku', label: 'SKU' },
+  { key: 'showInternalCode', label: 'Codigo interno' },
+  { key: 'showEan', label: 'EAN' },
+  { key: 'showNcm', label: 'NCM' },
+  { key: 'showMeasurements', label: 'Medidas' },
+  { key: 'showWeight', label: 'Peso' },
+  { key: 'showMasterBox', label: 'Caixa master' },
+  { key: 'showMinimumOrder', label: 'Pedido minimo' },
+  { key: 'showDescription', label: 'Descricao' },
+  { key: 'showObservations', label: 'Observacoes' },
+  { key: 'showVariations', label: 'Variacoes' },
+  { key: 'showStock', label: 'Estoque' },
+]
+
+export const defaultProductDisplayOptions: ProductDisplayOptions =
+  productDisplayFields.reduce(
+    (options, field) => ({ ...options, [field.key]: true }),
+    {} as ProductDisplayOptions,
+  )
 
 export type Metric = {
   label: string
@@ -35,8 +92,11 @@ export type Metric = {
 
 export type CatalogDesignPreset = {
   id: string
+  templateId: string
+  packageVersion: string
+  sourceType: 'manual' | 'design_pack'
   name: string
-  status: string
+  status: 'Rascunho' | 'Publicado'
   audience: string
   description: string
   coverStyle: string
@@ -47,6 +107,14 @@ export type CatalogDesignPreset = {
   surfaceColor: string
   textColor: string
   previewImage: string
+  previewKind?: 'image' | 'svg' | 'generated'
+  supportsFields: ProductDisplayOptions
+  defaultDisplayOptions: ProductDisplayOptions
+  manifestJson?: unknown
+  configJson?: unknown
+  tokensSchemaJson?: unknown
+  filesSummary?: string[]
+  importedAt?: string
 }
 
 export type CompanyAccount = {
@@ -96,6 +164,7 @@ export type CompanyCatalog = {
   name: string
   slug: string
   designPresetId: string
+  displayOptions: ProductDisplayOptions
   isReleasedToRepresentatives: boolean
   productsCount: number
 }
@@ -194,6 +263,9 @@ export const catalogSections = [
 export const catalogDesignPresets: CatalogDesignPreset[] = [
   {
     id: 'clean-wholesale',
+    templateId: 'atacado_limpo_01',
+    packageVersion: '1.0.0',
+    sourceType: 'manual',
     name: 'Atacado Limpo',
     status: 'Publicado',
     audience: 'Distribuidoras e fornecedores',
@@ -207,9 +279,15 @@ export const catalogDesignPresets: CatalogDesignPreset[] = [
     surfaceColor: '#ffffff',
     textColor: '#0f172a',
     previewImage: '/sample-products/esponja-1.png',
+    previewKind: 'generated',
+    supportsFields: defaultProductDisplayOptions,
+    defaultDisplayOptions: defaultProductDisplayOptions,
   },
   {
     id: 'gift-showcase',
+    templateId: 'vitrine_presentes_01',
+    packageVersion: '1.0.0',
+    sourceType: 'manual',
     name: 'Vitrine Presentes',
     status: 'Rascunho',
     audience: 'Lojas de presentes e decoracao',
@@ -223,9 +301,15 @@ export const catalogDesignPresets: CatalogDesignPreset[] = [
     surfaceColor: '#ffffff',
     textColor: '#1f2937',
     previewImage: '/sample-products/urso-1.png',
+    previewKind: 'generated',
+    supportsFields: defaultProductDisplayOptions,
+    defaultDisplayOptions: defaultProductDisplayOptions,
   },
   {
     id: 'kids-fast',
+    templateId: 'infantil_rapido_01',
+    packageVersion: '1.0.0',
+    sourceType: 'manual',
     name: 'Infantil Rapido',
     status: 'Publicado',
     audience: 'Brinquedos e infantil',
@@ -239,6 +323,9 @@ export const catalogDesignPresets: CatalogDesignPreset[] = [
     surfaceColor: '#ffffff',
     textColor: '#111827',
     previewImage: '/sample-products/tubarao-1.jpeg',
+    previewKind: 'generated',
+    supportsFields: defaultProductDisplayOptions,
+    defaultDisplayOptions: defaultProductDisplayOptions,
   },
 ]
 
