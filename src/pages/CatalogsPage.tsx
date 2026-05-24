@@ -1,8 +1,17 @@
-import { Eye, GripVertical, Send, UploadCloud } from 'lucide-react'
+import { Eye, GripVertical, Palette, Send, UploadCloud } from 'lucide-react'
 import { PageHeader } from '../components/PageHeader'
-import { catalogSections, products } from '../data/mock'
+import {
+  catalogDesignPresets,
+  catalogSections,
+  products,
+  selectedCatalogDesignId,
+} from '../data/mock'
 
 export function CatalogsPage() {
+  const selectedDesign = catalogDesignPresets.find(
+    (design) => design.id === selectedCatalogDesignId,
+  )
+
   return (
     <>
       <PageHeader
@@ -27,6 +36,15 @@ export function CatalogsPage() {
           <p className="mt-1 text-sm text-slate-500">
             Slug publico: utilidades-2026
           </p>
+          {selectedDesign ? (
+            <div className="mt-4 rounded-lg border border-teal-100 bg-teal-50 p-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-teal-800">
+                <Palette size={16} aria-hidden="true" />
+                Design em uso
+              </div>
+              <p className="mt-1 text-sm text-teal-700">{selectedDesign.name}</p>
+            </div>
+          ) : null}
           <div className="mt-5 space-y-2">
             {catalogSections.map((section) => (
               <button
@@ -76,7 +94,7 @@ export function CatalogsPage() {
                     {product.title}
                   </p>
                   <p className="text-sm text-slate-500">
-                    Ordem {index + 1} · {product.category}
+                    Ordem {index + 1} - {product.category}
                   </p>
                 </div>
                 <button

@@ -3,6 +3,7 @@ import { AdminPage } from './pages/AdminPage'
 import { AppShell } from './pages/AppShell'
 import { CatalogsPage } from './pages/CatalogsPage'
 import { CompanyDashboardPage } from './pages/CompanyDashboardPage'
+import { CompanyDesignsPage } from './pages/CompanyDesignsPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlanPage } from './pages/PlanPage'
 import { PricingPage } from './pages/PricingPage'
@@ -14,11 +15,12 @@ import { RepresentativeDashboardPage } from './pages/RepresentativeDashboardPage
 import { RepresentativesPage } from './pages/RepresentativesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SignupPage } from './pages/SignupPage'
+import { SurfaceRedirect } from './pages/SurfaceRedirect'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/app" replace />} />
+      <Route path="/" element={<SurfaceRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/pricing" element={<PricingPage />} />
@@ -29,6 +31,7 @@ function App() {
         <Route index element={<CompanyDashboardPage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="catalogs" element={<CatalogsPage />} />
+        <Route path="designs" element={<CompanyDesignsPage />} />
         <Route path="representatives" element={<RepresentativesPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="plan" element={<PlanPage />} />
@@ -36,6 +39,7 @@ function App() {
       </Route>
       <Route path="/rep" element={<RepresentativeDashboardPage />} />
       <Route path="/admin" element={<AdminPage />} />
+      <Route path="/dev" element={<AdminPage />} />
       <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
   )

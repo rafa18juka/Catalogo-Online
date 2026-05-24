@@ -16,8 +16,23 @@ SaaS de catalogo virtual inteligente para empresas, representantes e clientes fi
 ```bash
 npm install
 npm run dev
+npm run dev:dev
+npm run dev:company
+npm run dev:rep
+npm run dev:catalog
 npm run build
 ```
+
+## Ambientes locais
+
+Cada superficie pode rodar em uma porta propria:
+
+- Dev/admin: `http://127.0.0.1:5174/`
+- Empresa: `http://127.0.0.1:5175/`
+- Representante: `http://127.0.0.1:5176/`
+- Catalogo publico: `http://127.0.0.1:5177/`
+
+A raiz de cada porta redireciona para a superficie correta.
 
 ## Supabase
 
@@ -49,9 +64,10 @@ Para linkar e aplicar migracoes no projeto remoto, sera necessario autenticar o 
 - `/app`: painel da empresa
 - `/app/products`: produtos e imagens
 - `/app/catalogs`: criador de catalogos
+- `/app/designs`: escolha do design do catalogo
 - `/app/representatives`: representantes
 - `/app/reports`: relatorio de interesse
 - `/rep`: painel do representante
-- `/admin`: admin/dev
+- `/dev` ou `/admin`: admin/dev
 - `/c/utilidades-2026/rep-cadu`: catalogo publico
 - `/login`, `/signup`, `/pricing`, `/privacy`

@@ -1,7 +1,11 @@
 import { Check, Copy, MessageCircle, Search, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { products } from '../data/mock'
+import {
+  catalogDesignPresets,
+  products,
+  selectedCatalogDesignId,
+} from '../data/mock'
 
 export function PublicCatalogPage() {
   const { catalogSlug, shareCode } = useParams()
@@ -14,12 +18,21 @@ export function PublicCatalogPage() {
     () => products.find((product) => product.id === selectedProductId),
     [selectedProductId],
   )
+  const selectedDesign =
+    catalogDesignPresets.find((design) => design.id === selectedCatalogDesignId) ??
+    catalogDesignPresets[0]
 
   if (!hasEntered) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#f6f7f2] px-4 py-8">
+      <main
+        className="grid min-h-screen place-items-center px-4 py-8"
+        style={{ backgroundColor: selectedDesign.backgroundColor }}
+      >
         <section className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mx-auto mb-5 grid size-12 place-items-center rounded-lg bg-teal-700 text-white">
+          <div
+            className="mx-auto mb-5 grid size-12 place-items-center rounded-lg text-white"
+            style={{ backgroundColor: selectedDesign.primaryColor }}
+          >
             <Check size={22} aria-hidden="true" />
           </div>
           <h1 className="text-center text-2xl font-semibold text-slate-950">
@@ -37,9 +50,10 @@ export function PublicCatalogPage() {
             />
           </label>
           <button
-            className="mt-4 h-12 w-full rounded-md bg-teal-700 text-base font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="mt-4 h-12 w-full rounded-md text-base font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
             disabled={!visitorName.trim()}
             onClick={() => setHasEntered(true)}
+            style={{ backgroundColor: selectedDesign.primaryColor }}
             type="button"
           >
             Acessar catalogo
@@ -57,23 +71,42 @@ export function PublicCatalogPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f7f2]">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
+    <main
+      className="min-h-screen"
+      style={{
+        backgroundColor: selectedDesign.backgroundColor,
+        color: selectedDesign.textColor,
+      }}
+    >
+      <header
+        className="sticky top-0 z-20 border-b px-4 py-3 shadow-sm"
+        style={{
+          backgroundColor: selectedDesign.surfaceColor,
+          borderColor: `${selectedDesign.primaryColor}22`,
+        }}
+      >
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-semibold text-slate-950">
+            <p
+              className="text-xs font-semibold uppercase tracking-[0.16em]"
+              style={{ color: selectedDesign.primaryColor }}
+            >
+              {selectedDesign.name}
+            </p>
+            <h1 className="truncate text-lg font-semibold">
               Catalogo Utilidades 2026
             </h1>
             <p className="truncate text-xs text-slate-500">
-              {catalogSlug} · {shareCode ?? 'link direto'}
+              {catalogSlug} - {shareCode ?? 'link direto'}
             </p>
           </div>
           <a
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#1f9d68] px-3 text-sm font-semibold text-white"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold text-white"
             href="https://wa.me/"
+            style={{ backgroundColor: '#1f9d68' }}
           >
             <MessageCircle size={18} aria-hidden="true" />
-            Orçamento
+            Orcamento
           </a>
         </div>
       </header>
@@ -95,8 +128,9 @@ export function PublicCatalogPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <article
-              className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
+              className="overflow-hidden rounded-lg border border-slate-200 shadow-sm"
               key={product.id}
+              style={{ backgroundColor: selectedDesign.surfaceColor }}
             >
               <button
                 className="block aspect-square w-full overflow-hidden bg-slate-100"
@@ -113,14 +147,15 @@ export function PublicCatalogPage() {
                 />
               </button>
               <div className="p-3">
-                <h2 className="text-base font-semibold text-slate-950">
-                  {product.title}
-                </h2>
+                <h2 className="text-base font-semibold">{product.title}</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  {product.sku} · {product.category}
+                  {product.sku} - {product.category}
                 </p>
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <span className="font-semibold text-slate-950">
+                  <span
+                    className="font-semibold"
+                    style={{ color: selectedDesign.primaryColor }}
+                  >
                     {product.price}
                   </span>
                   <button
@@ -161,7 +196,7 @@ export function PublicCatalogPage() {
             </div>
             <img
               alt={selectedProduct.title}
-              className="max-h-[70vh] w-full object-contain bg-slate-100"
+              className="max-h-[70vh] w-full bg-slate-100 object-contain"
               height="900"
               src={selectedProduct.image}
               width="900"

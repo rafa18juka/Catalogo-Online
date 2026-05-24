@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:dev": "vite --host 127.0.0.1 --port 5174",
+    "dev:company": "vite --host 127.0.0.1 --port 5175",
+    "dev:rep": "vite --host 127.0.0.1 --port 5176",
+    "dev:catalog": "vite --host 127.0.0.1 --port 5177",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

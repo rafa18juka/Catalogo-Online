@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   BarChart3,
   Boxes,
+  Brush,
   FileText,
   Gauge,
   Image,
@@ -27,6 +28,22 @@ export type Metric = {
   trend: string
   icon: LucideIcon
   tone: string
+}
+
+export type CatalogDesignPreset = {
+  id: string
+  name: string
+  status: string
+  audience: string
+  description: string
+  coverStyle: string
+  gridStyle: string
+  primaryColor: string
+  accentColor: string
+  backgroundColor: string
+  surfaceColor: string
+  textColor: string
+  previewImage: string
 }
 
 export const metrics: Metric[] = [
@@ -110,6 +127,68 @@ export const catalogSections = [
   'Infantil',
 ]
 
+export const catalogDesignPresets: CatalogDesignPreset[] = [
+  {
+    id: 'clean-wholesale',
+    name: 'Atacado Limpo',
+    status: 'Publicado',
+    audience: 'Distribuidoras e fornecedores',
+    description:
+      'Layout direto, rapido e com foco em lista de produtos para compra recorrente.',
+    coverStyle: 'Cabecalho compacto com busca fixa',
+    gridStyle: 'Grade de cards objetivos',
+    primaryColor: '#0f766e',
+    accentColor: '#d97706',
+    backgroundColor: '#f6f7f2',
+    surfaceColor: '#ffffff',
+    textColor: '#0f172a',
+    previewImage: '/sample-products/esponja-1.png',
+  },
+  {
+    id: 'gift-showcase',
+    name: 'Vitrine Presentes',
+    status: 'Rascunho',
+    audience: 'Lojas de presentes e decoracao',
+    description:
+      'Catalogo mais visual, com produtos maiores e destaque para fotos contextuais.',
+    coverStyle: 'Capa visual com destaque de colecao',
+    gridStyle: 'Cards grandes com preco destacado',
+    primaryColor: '#be123c',
+    accentColor: '#2563eb',
+    backgroundColor: '#fff7ed',
+    surfaceColor: '#ffffff',
+    textColor: '#1f2937',
+    previewImage: '/sample-products/urso-1.png',
+  },
+  {
+    id: 'kids-fast',
+    name: 'Infantil Rapido',
+    status: 'Publicado',
+    audience: 'Brinquedos e infantil',
+    description:
+      'Visual simples e alegre, mantendo performance e leitura facil no celular.',
+    coverStyle: 'Topo colorido com secoes visiveis',
+    gridStyle: 'Cards arredondados com imagem forte',
+    primaryColor: '#2563eb',
+    accentColor: '#f59e0b',
+    backgroundColor: '#eef6ff',
+    surfaceColor: '#ffffff',
+    textColor: '#111827',
+    previewImage: '/sample-products/tubarao-1.jpeg',
+  },
+]
+
+export const selectedCatalogDesignId = 'clean-wholesale'
+
+export const linkedRepresentative = {
+  name: 'Cadu Almeida',
+  email: 'cadu@representante.com.br',
+  supplierDocument: '12.345.678/0001-90',
+  company: 'Importadora Exemplo',
+  inviteToken: 'REP-UTIL-2026',
+  shareLink: 'http://127.0.0.1:5177/c/utilidades-2026/rep-cadu',
+}
+
 export const recentClients = [
   {
     name: 'Cadu',
@@ -139,6 +218,7 @@ export const appModules = [
   { label: 'Produtos', href: '/app/products', icon: PackageOpen },
   { label: 'Imagens', href: '/app/products', icon: Image },
   { label: 'Catalogos', href: '/app/catalogs', icon: FileText },
+  { label: 'Designs', href: '/app/designs', icon: Brush },
   { label: 'Representantes', href: '/app/representatives', icon: Users },
   { label: 'Relatorios', href: '/app/reports', icon: Gauge },
   { label: 'Plano', href: '/app/plan', icon: Boxes },
