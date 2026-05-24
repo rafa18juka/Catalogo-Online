@@ -7,6 +7,7 @@ import { CompanyDashboardPage } from './pages/CompanyDashboardPage'
 import { CompanyDesignsPage } from './pages/CompanyDesignsPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlanPage } from './pages/PlanPage'
+import { PortalPage } from './pages/PortalPage'
 import { PricingPage } from './pages/PricingPage'
 import { PrivacyPage } from './pages/PrivacyPage'
 import { ProductsPage } from './pages/ProductsPage'
@@ -14,6 +15,7 @@ import { PublicCatalogPage } from './pages/PublicCatalogPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { RepresentativeAuthPage } from './pages/RepresentativeAuthPage'
 import { RepresentativeDashboardPage } from './pages/RepresentativeDashboardPage'
+import { RepresentationFirmDashboardPage } from './pages/RepresentationFirmDashboardPage'
 import { RepresentativesPage } from './pages/RepresentativesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SignupPage } from './pages/SignupPage'
@@ -23,6 +25,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<SurfaceRedirect />} />
+      <Route path="/portal" element={<PortalPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/empresa/login" element={<CompanyAuthPage />} />
@@ -44,9 +47,10 @@ function App() {
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="/rep" element={<RepresentativeDashboardPage />} />
+      <Route path="/rep-firm" element={<RepresentationFirmDashboardPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/dev" element={<AdminPage />} />
-      <Route path="*" element={<Navigate to="/app" replace />} />
+      <Route path="*" element={<Navigate to="/portal" replace />} />
     </Routes>
   )
 }

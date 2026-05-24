@@ -1,24 +1,41 @@
-import { Building2, LogIn, ShieldCheck } from 'lucide-react'
+import { Building2, LogIn } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  authenticateCompany,
+  registerCompany,
+  setCurrentCompany,
+} from '../lib/mockStore'
 import { AuthLayout } from './AuthLayout'
-import { companies } from '../data/mock'
-import { setCurrentCompany } from '../lib/mockStore'
 
 export function CompanyAuthPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(companies[0].email)
-  const [password, setPassword] = useState(companies[0].password)
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [message, setMessage] = useState('')
+  const [form, setForm] = useState({
+    tradeName: '',
+    legalName: '',
+    cnpj: '',
+    responsibleName: '',
+    responsibleCpf: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: '',
+    plan: 'Starter',
+    stripeCustomerId: '',
+    stripeSubscriptionId: '',
+  })
+
+  function updateField(name: keyof typeof form, value: string) {
+    setForm((current) => ({ ...current, [name]: value }))
+  }
 
   function handleLogin() {
-    const company = companies.find(
-      (item) => item.email === email && item.password === password,
-    )
+    const company = authenticateCompany(form.email, form.password)
 
     if (!company) {
-      setMessage('Email ou senha da empresa invalidos.')
+      setMessage('Empresa nao encontrada. Cadastre primeiro pelo formulario.')
       return
     }
 
@@ -31,45 +48,92 @@ export function CompanyAuthPage() {
     navigate('/app')
   }
 
+  function handleSignup() {
+    if (!form.tradeName || !form.legalName || !form.cnpj || !form.email) {
+      setMessage('Preencha os dados obrigatorios da empresa.')
+      return
+    }
+
+    const company = registerCompany({
+      tradeName: form.tradeName,
+      legalName: form.legalName,
+      cnpj: form.cnpj,
+      responsibleName: form.responsibleName,
+      responsibleCpf: form.responsibleCpf,
+      email: form.email,
+      password: form.password,
+      phone: form.phone,
+      address: form.address,
+      plan: form.plan,
+      stripeCustomerId: form.stripeCustomerId || undefined,
+    })
+
+    setCurrentCompany(company.id)
+    navigate('/app')
+  }
+
   return (
     <AuthLayout
-      title={mode === 'login' ? 'Login da empresa' : 'Cadastro da empresa'}
+      title={mode === 'login' ? 'Login da empresa' : 'Cadastro completo'}
       description="Empresas acessam o painel apos pagamento confirmado via Stripe ou liberacao manual no painel dev."
     >
-      <div className="mt-5 rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm leading-6 text-teal-800">
-        <ShieldCheck className="mb-2 text-teal-700" size={18} aria-hidden="true" />
-        Teste: use `admin@casaverdeatacado.com.br` com senha `CasaVerde@123`.
-      </div>
       <form className="mt-6 space-y-4">
         {mode === 'signup' ? (
-          <label className="block">
-            <span className="text-sm font-semibold text-slate-700">
-              CNPJ da empresa
-            </span>
-            <input
-              className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
-              placeholder="00.000.000/0001-00"
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Nome fantasia"
+              onChange={(value) => updateField('tradeName', value)}
+              value={form.tradeName}
             />
-          </label>
+            <Field
+              label="Razao social"
+              onChange={(value) => updateField('legalName', value)}
+              value={form.legalName}
+            />
+            <Field
+              label="CNPJ"
+              onChange={(value) => updateField('cnpj', value)}
+              value={form.cnpj}
+            />
+            <Field
+              label="Responsavel"
+              onChange={(value) => updateField('responsibleName', value)}
+              value={form.responsibleName}
+            />
+            <Field
+              label="CPF do responsavel"
+              onChange={(value) => updateField('responsibleCpf', value)}
+              value={form.responsibleCpf}
+            />
+            <Field
+              label="Telefone"
+              onChange={(value) => updateField('phone', value)}
+              value={form.phone}
+            />
+            <Field
+              label="Endereco"
+              onChange={(value) => updateField('address', value)}
+              value={form.address}
+            />
+            <Field
+              label="Plano"
+              onChange={(value) => updateField('plan', value)}
+              value={form.plan}
+            />
+          </div>
         ) : null}
-        <label className="block">
-          <span className="text-sm font-semibold text-slate-700">Email</span>
-          <input
-            className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
-            onChange={(event) => setEmail(event.target.value)}
-            type="email"
-            value={email}
-          />
-        </label>
-        <label className="block">
-          <span className="text-sm font-semibold text-slate-700">Senha</span>
-          <input
-            className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
-            onChange={(event) => setPassword(event.target.value)}
-            type="password"
-            value={password}
-          />
-        </label>
+        <Field
+          label="Email de login"
+          onChange={(value) => updateField('email', value)}
+          type="email"
+          value={form.email}
+        />
+        <Field
+          label="Senha"
+          onChange={(value) => updateField('password', value)}
+          type="password"
+          value={form.password}
+        />
         {message ? (
           <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
             {message}
@@ -77,7 +141,7 @@ export function CompanyAuthPage() {
         ) : null}
         <button
           className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-teal-700 text-sm font-semibold text-white hover:bg-teal-800"
-          onClick={handleLogin}
+          onClick={mode === 'login' ? handleLogin : handleSignup}
           type="button"
         >
           {mode === 'login' ? (
@@ -85,7 +149,7 @@ export function CompanyAuthPage() {
           ) : (
             <Building2 size={18} aria-hidden="true" />
           )}
-          {mode === 'login' ? 'Entrar no painel' : 'Criar conta'}
+          {mode === 'login' ? 'Entrar no painel' : 'Cadastrar empresa'}
         </button>
       </form>
       <button
@@ -94,9 +158,30 @@ export function CompanyAuthPage() {
         type="button"
       >
         {mode === 'login'
-          ? 'Ainda nao tenho conta de empresa'
-          : 'Ja tenho conta de empresa'}
+          ? 'Cadastrar nova empresa'
+          : 'Ja tenho cadastro de empresa'}
       </button>
     </AuthLayout>
+  )
+}
+
+type FieldProps = {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  type?: string
+}
+
+function Field({ label, value, onChange, type = 'text' }: FieldProps) {
+  return (
+    <label className="block">
+      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <input
+        className="mt-2 h-11 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
+        onChange={(event) => onChange(event.target.value)}
+        type={type}
+        value={value}
+      />
+    </label>
   )
 }

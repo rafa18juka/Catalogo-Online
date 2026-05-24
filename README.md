@@ -36,34 +36,16 @@ A raiz de cada porta redireciona para a superficie correta.
 
 ## Dados ficticios para teste
 
-Empresa com acesso liberado via Stripe:
+As contas nao vem mais pre-cadastradas na aplicacao. Use
+`dados_teste_cadastros.txt` para cadastrar manualmente:
 
-- Email: `admin@casaverdeatacado.com.br`
-- Senha: `CasaVerde@123`
+- 1 empresa compradora do SaaS
+- 1 firma de representacoes
+- 1 representante dessa firma
+- 1 representante autonomo
 
-Empresa com acesso liberado manualmente pelo dev:
-
-- Email: `gestor@novamesautilidades.com.br`
-- Senha: `NovaMesa@123`
-
-Representantes:
-
-- `cadu.rep@catalogo.test` / `RepCadu@123`
-- `marina.rep@catalogo.test` / `RepMarina@123`
-- `tiago.rep@catalogo.test` / `RepTiago@123`
-- `livia.rep@catalogo.test` / `RepLivia@123`
-
-Fluxo de teste do vinculo:
-
-1. Abra a empresa em `http://127.0.0.1:5175/`.
-2. Entre com a empresa Casa Verde.
-3. Va em `Representantes` e clique em `Gerar token`.
-4. Abra o representante em `http://127.0.0.1:5176/`.
-5. Entre com Cadu.
-6. Cole o token gerado e clique em `Vincular empresa`.
-7. Os catalogos liberados pela empresa aparecem no painel do representante.
-
-Na tela `Catalogos` da empresa, o toggle `Liberar` controla quais catalogos aparecem para representantes vinculados.
+Fluxo base: acesse `/portal`, cadastre os perfis, gere token na empresa,
+vincule no painel da firma ou do representante autonomo e teste a revogacao.
 
 ## Supabase
 

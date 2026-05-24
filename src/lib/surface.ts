@@ -17,8 +17,8 @@ export function getSurfaceFromPort(port: string): AppSurface {
 
 export function getDefaultPathForSurface(surface: AppSurface) {
   if (surface === 'dev') return '/dev'
-  if (surface === 'representative') return '/representante/login'
+  if (surface === 'representative') return '/portal'
   if (surface === 'catalog') return '/c/utilidades-2026/rep-cadu'
 
-  return '/empresa/login'
+  return '/portal'
 }

@@ -7,8 +7,9 @@ import {
   clearCurrentRepresentative,
   getCurrentRepresentative,
   getLinkedCompaniesForRepresentative,
+  getRepresentationFirms,
   getReleasedCatalogsForRepresentative,
-  linkRepresentativeWithToken,
+  linkAccessWithToken,
 } from '../lib/mockStore'
 
 export function RepresentativeDashboardPage() {
@@ -23,13 +24,16 @@ export function RepresentativeDashboardPage() {
   }
 
   const activeRepresentative = representative
+  const firm = activeRepresentative.firmId
+    ? getRepresentationFirms().find((item) => item.id === activeRepresentative.firmId)
+    : undefined
   const linkedCompanies = getLinkedCompaniesForRepresentative(activeRepresentative.id)
   const releasedCatalogs = getReleasedCatalogsForRepresentative(
     activeRepresentative.id,
   )
 
   function handleLink() {
-    const result = linkRepresentativeWithToken(activeRepresentative.id, token)
+    const result = linkAccessWithToken(activeRepresentative.id, 'autonomous', token)
     setMessage(result.message)
     setToken('')
     setVersion((current) => current + 1)
@@ -48,6 +52,7 @@ export function RepresentativeDashboardPage() {
           <div className="flex items-center gap-2">
             <span className="hidden rounded-md bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 sm:inline-flex">
               {activeRepresentative.fullName}
+              {firm ? ` - ${firm.tradeName}` : ''}
             </span>
             <button
               className="grid size-10 place-items-center rounded-md border border-slate-200 text-slate-600"
@@ -64,31 +69,40 @@ export function RepresentativeDashboardPage() {
         <aside className="space-y-5">
           <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <h1 className="text-xl font-semibold text-slate-950">
-              Vincular a uma empresa
+              {firm ? 'Representante da firma' : 'Vincular a uma empresa'}
             </h1>
-            <p className="mt-1 text-sm leading-6 text-slate-500">
-              Cole o token enviado pela empresa. Um representante pode se
-              vincular a varias empresas.
-            </p>
-            <label className="mt-5 block">
-              <span className="text-sm font-semibold text-slate-700">
-                Token da empresa
-              </span>
-              <input
-                className="mt-2 h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 font-mono text-sm uppercase outline-none focus:border-teal-600 focus:bg-white"
-                onChange={(event) => setToken(event.target.value)}
-                placeholder="FORN-XXXX-0000"
-                value={token}
-              />
-            </label>
-            <button
-              className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-teal-700 text-sm font-semibold text-white hover:bg-teal-800"
-              onClick={handleLink}
-              type="button"
-            >
-              <UserPlus size={18} aria-hidden="true" />
-              Vincular empresa
-            </button>
+            {firm ? (
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                Este representante pertence a {firm.tradeName}. Ele recebe os
+                catalogos liberados para a firma de representacoes.
+              </p>
+            ) : (
+              <>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  Cole o token enviado pela empresa. Um representante autonomo
+                  pode se vincular a varias empresas.
+                </p>
+                <label className="mt-5 block">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Token da empresa
+                  </span>
+                  <input
+                    className="mt-2 h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 font-mono text-sm uppercase outline-none focus:border-teal-600 focus:bg-white"
+                    onChange={(event) => setToken(event.target.value)}
+                    placeholder="FORN-XXXX-0000"
+                    value={token}
+                  />
+                </label>
+                <button
+                  className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-teal-700 text-sm font-semibold text-white hover:bg-teal-800"
+                  onClick={handleLink}
+                  type="button"
+                >
+                  <UserPlus size={18} aria-hidden="true" />
+                  Vincular empresa
+                </button>
+              </>
+            )}
             {message ? (
               <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
                 {message}

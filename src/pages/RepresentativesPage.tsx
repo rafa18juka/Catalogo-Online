@@ -1,42 +1,60 @@
-import { Copy, KeyRound, MailPlus, RefreshCcw } from 'lucide-react'
+import { Copy, KeyRound, MailPlus, RefreshCcw, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
-import { companies, representatives } from '../data/mock'
 import {
   createCompanyInviteToken,
   getCompanyRepresentativeLinks,
   getCurrentCompany,
   getInviteTokens,
+  getRepresentationFirms,
+  getRepresentatives,
+  revokeRepresentativeLink,
 } from '../lib/mockStore'
 
 export function RepresentativesPage() {
-  const company = getCurrentCompany() ?? companies[0]
+  const company = getCurrentCompany()
   const [tokens, setTokens] = useState(getInviteTokens())
-  const [links, setLinks] = useState(getCompanyRepresentativeLinks(company.id))
+  const [links, setLinks] = useState(
+    getCompanyRepresentativeLinks(company?.id ?? ''),
+  )
+
+  if (!company) return null
+
+  const activeCompany = company
+
+  function refresh() {
+    setTokens(getInviteTokens())
+    setLinks(getCompanyRepresentativeLinks(activeCompany.id))
+  }
 
   function handleCreateToken() {
-    createCompanyInviteToken(company.id)
-    setTokens(getInviteTokens())
+    createCompanyInviteToken(activeCompany.id)
+    refresh()
   }
 
-  function handleRefresh() {
-    setTokens(getInviteTokens())
-    setLinks(getCompanyRepresentativeLinks(company.id))
+  function handleRevoke(
+    representativeId: string,
+    representativeType: 'autonomous' | 'representation_firm',
+  ) {
+    revokeRepresentativeLink(activeCompany.id, representativeId, representativeType)
+    refresh()
   }
 
-  const companyTokens = tokens.filter((token) => token.companyId === company.id)
+  const companyTokens = tokens.filter((token) => token.companyId === activeCompany.id)
+  const representatives = getRepresentatives()
+  const firms = getRepresentationFirms()
 
   return (
     <>
       <PageHeader
         eyebrow="Representantes"
-        title="Cadastro de fornecedor e tokens"
-        description="A empresa gera um token e envia ao representante. Sem esse token, o representante nao acessa nenhum catalogo."
+        title="Tokens e vinculos"
+        description="A empresa gera um token para o fornecedor. Depois do vinculo, pode revogar o acesso a qualquer momento."
         action={
           <div className="flex flex-wrap gap-2">
             <button
               className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-teal-600 hover:text-teal-700"
-              onClick={handleRefresh}
+              onClick={refresh}
               type="button"
             >
               <RefreshCcw size={18} aria-hidden="true" />
@@ -55,12 +73,9 @@ export function RepresentativesPage() {
       />
       <section className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[420px_1fr]">
         <aside className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="font-semibold text-slate-950">
-            Tokens de vinculo da empresa
-          </h2>
+          <h2 className="font-semibold text-slate-950">Tokens gerados</h2>
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Envie um token ao fornecedor. Ele usa no painel gratuito de
-            representante para se vincular a {company.tradeName}.
+            Envie um token ao representante autonomo ou firma de representacoes.
           </p>
           <div className="mt-4 space-y-3">
             {companyTokens.length ? (
@@ -75,9 +90,7 @@ export function RepresentativesPage() {
                         {token.token}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {token.usedByRepresentativeId
-                          ? 'Ja usado'
-                          : 'Disponivel'}
+                        {token.usedById ? 'Ja usado' : 'Disponivel'}
                       </p>
                     </div>
                     <button
@@ -105,69 +118,58 @@ export function RepresentativesPage() {
           </div>
         </aside>
 
-        <div className="space-y-5">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="font-semibold text-slate-950">
-              Representantes vinculados
-            </h2>
-            <div className="mt-4 divide-y divide-slate-100">
-              {links.length ? (
-                links.map((link) => {
-                  const representative = representatives.find(
-                    (item) => item.id === link.representativeId,
-                  )
+        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 className="font-semibold text-slate-950">
+            Representantes vinculados
+          </h2>
+          <div className="mt-4 divide-y divide-slate-100">
+            {links.length ? (
+              links.map((link) => {
+                const representative =
+                  link.representativeType === 'autonomous'
+                    ? representatives.find((item) => item.id === link.representativeId)
+                    : undefined
+                const firm =
+                  link.representativeType === 'representation_firm'
+                    ? firms.find((item) => item.id === link.representativeId)
+                    : representative?.firmId
+                      ? firms.find((item) => item.id === representative.firmId)
+                      : undefined
 
-                  return (
-                    <div
-                      className="grid gap-2 py-3 sm:grid-cols-[1fr_auto]"
-                      key={`${link.representativeId}-${link.companyId}`}
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-950">
-                          {representative?.fullName ?? link.representativeId}
-                        </p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          Token usado: {link.token}
-                        </p>
-                      </div>
-                      <span className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                        Vinculado
-                      </span>
+                return (
+                  <div
+                    className="grid gap-3 py-3 sm:grid-cols-[1fr_auto]"
+                    key={`${link.representativeId}-${link.companyId}`}
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-950">
+                        {representative?.fullName ?? firm?.tradeName ?? 'Vinculo'}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Empresa do representante:{' '}
+                        {firm?.tradeName ?? 'Representante autonomo'}
+                      </p>
                     </div>
-                  )
-                })
-              ) : (
-                <p className="py-4 text-sm text-slate-500">
-                  Nenhum representante vinculado a esta empresa ainda.
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="font-semibold text-slate-950">
-              Representantes ficticios para teste
-            </h2>
-            <div className="mt-4 grid gap-3 lg:grid-cols-2">
-              {representatives.map((representative) => (
-                <article
-                  className="rounded-md border border-slate-200 p-3"
-                  key={representative.id}
-                >
-                  <p className="font-semibold text-slate-950">
-                    {representative.fullName}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {representative.email}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Senha: {representative.password}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
+                    <button
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-rose-200 px-3 text-sm font-semibold text-rose-700 hover:bg-rose-50"
+                      onClick={() =>
+                        handleRevoke(link.representativeId, link.representativeType)
+                      }
+                      type="button"
+                    >
+                      <XCircle size={16} aria-hidden="true" />
+                      Revogar
+                    </button>
+                  </div>
+                )
+              })
+            ) : (
+              <p className="py-4 text-sm text-slate-500">
+                Nenhum representante vinculado a esta empresa ainda.
+              </p>
+            )}
+          </div>
+        </section>
       </section>
     </>
   )

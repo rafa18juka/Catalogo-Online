@@ -12,14 +12,13 @@ import {
 import { useState } from 'react'
 import { Brand } from '../components/Brand'
 import { DesignPreview } from '../components/DesignPreview'
-import {
-  catalogDesignPresets,
-  companies,
-  representatives,
-} from '../data/mock'
+import { catalogDesignPresets } from '../data/mock'
 import {
   getCompanyCatalogCount,
+  getCompanies,
+  getRepresentationFirms,
   getRepresentativeLinks,
+  getRepresentatives,
 } from '../lib/mockStore'
 
 const devEvents = [
@@ -32,10 +31,18 @@ const devEvents = [
 export function AdminPage() {
   const [manualCompanyName, setManualCompanyName] = useState('')
   const links = getRepresentativeLinks()
+  const companies = getCompanies()
+  const representatives = getRepresentatives()
+  const firms = getRepresentationFirms()
 
   const adminMetrics = [
     ['Empresas cadastradas', String(companies.length), Database, 'text-sky-700'],
-    ['Representantes', String(representatives.length), Users, 'text-teal-700'],
+    [
+      'Representantes',
+      String(representatives.length + firms.length),
+      Users,
+      'text-teal-700',
+    ],
     ['Vinculos ativos', String(links.length), RadioTower, 'text-rose-700'],
     ['Storage usado', '88 GB', HardDrive, 'text-amber-700'],
   ] as const
@@ -134,7 +141,7 @@ export function AdminPage() {
                         {company.tradeName}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
-                        {company.email} - {company.password}
+                        {company.email}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
                         {company.legalName}
@@ -168,8 +175,17 @@ export function AdminPage() {
               </h2>
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 {representatives.map((representative) => {
+                  const entityId = representative.firmId ?? representative.id
+                  const entityType = representative.firmId
+                    ? 'representation_firm'
+                    : 'autonomous'
                   const linkedCompanies = links
-                    .filter((link) => link.representativeId === representative.id)
+                    .filter(
+                      (link) =>
+                        link.representativeId === entityId &&
+                        link.representativeType === entityType &&
+                        link.status === 'active',
+                    )
                     .map((link) =>
                       companies.find((company) => company.id === link.companyId),
                     )
@@ -186,7 +202,7 @@ export function AdminPage() {
                             {representative.fullName}
                           </h3>
                           <p className="mt-1 text-sm text-slate-500">
-                            {representative.email} - {representative.password}
+                            {representative.email}
                           </p>
                           <p className="mt-1 text-sm text-slate-500">
                             CPF {representative.cpf}

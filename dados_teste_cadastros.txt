@@ -1,0 +1,75 @@
+Dados ficticios para testar o fluxo de cadastros e logins
+=========================================================
+
+Use estes dados para cadastrar manualmente os usuarios pelo portal:
+http://127.0.0.1:5175/portal
+ou
+http://127.0.0.1:5176/portal
+
+1. Empresa compradora do SaaS
+----------------------------
+Tipo: Empresa
+Nome fantasia: Aurora Casa Atacado
+Razao social: Aurora Casa Comercio e Distribuicao LTDA
+CNPJ: 47.258.913/0001-64
+Responsavel: Beatriz Nogueira Martins
+CPF do responsavel: 935.411.860-08
+Telefone: +55 11 94567-1200
+Endereco: Rua das Magnolias, 1280, Vila Mariana, Sao Paulo - SP
+Plano: Pro
+Email de login: empresa@auroracasa.test
+Senha: AuroraCasa@123
+
+Observacao: no mock local, empresas cadastradas pelo portal entram como
+liberadas manualmente para facilitar o teste. No produto final, o acesso sera
+liberado via confirmacao de pagamento Stripe ou pelo painel dev.
+
+2. Firma de representacoes
+--------------------------
+Tipo: Firma de representacoes
+Nome fantasia: Ponte Sul Representacoes
+Razao social: Ponte Sul Representacoes Comerciais LTDA
+CNPJ: 31.906.774/0001-52
+Responsavel: Gustavo Henrique Lima
+CPF do responsavel: 864.219.370-42
+Telefone: +55 41 93456-2200
+Endereco: Avenida Sete de Setembro, 4012, Batel, Curitiba - PR
+Email de login: contato@pontesulrep.test
+Senha: PonteSul@123
+
+3. Representante da firma Ponte Sul
+-----------------------------------
+Cadastre este representante dentro do painel da firma de representacoes.
+
+Nome completo: Rafael Moreira Campos
+CPF: 706.481.530-10
+Telefone: +55 41 95555-3300
+Email de login: rafael@pontesulrep.test
+Senha: RafaelRep@123
+
+Depois de cadastrado, Rafael deve conseguir entrar pelo portal de
+representantes e ver no topo que pertence a Ponte Sul Representacoes.
+
+4. Representante autonomo
+-------------------------
+Tipo: Representante autonomo
+Nome completo: Camila Torres Almeida
+CPF: 153.247.960-01
+Telefone: +55 31 95555-4400
+Email de login: camila.autonoma@test
+Senha: CamilaAuto@123
+
+Fluxo recomendado de teste
+--------------------------
+1. Abra /portal e cadastre a empresa Aurora Casa Atacado.
+2. No painel da empresa, va em Representantes e clique em Gerar token.
+3. Cadastre a firma Ponte Sul Representacoes no portal de representantes.
+4. No painel da firma, cole o token da Aurora Casa e vincule.
+5. Ainda no painel da firma, cadastre Rafael Moreira Campos.
+6. Saia e entre com Rafael pelo login de representante.
+7. Rafael deve ver os catalogos liberados da Aurora Casa, pois pertence a firma.
+8. Cadastre Camila como representante autonoma.
+9. Gere outro token na empresa Aurora Casa.
+10. Entre como Camila, cole o token e vincule.
+11. Camila deve ver somente os catalogos liberados da Aurora Casa.
+12. Na empresa, va em Representantes e use Revogar para remover o acesso.
