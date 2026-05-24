@@ -1,4 +1,5 @@
 import { Eye, GripVertical, Palette, Send, UploadCloud } from 'lucide-react'
+import { useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
 import {
   catalogDesignPresets,
@@ -6,11 +7,27 @@ import {
   products,
   selectedCatalogDesignId,
 } from '../data/mock'
+import {
+  getCatalogsWithReleaseState,
+  getCurrentCompany,
+  setCatalogRelease,
+} from '../lib/mockStore'
 
 export function CatalogsPage() {
+  const company = getCurrentCompany()
+  const [companyCatalogs, setCompanyCatalogs] = useState(
+    getCatalogsWithReleaseState(company?.id ?? 'company-casa-verde'),
+  )
   const selectedDesign = catalogDesignPresets.find(
     (design) => design.id === selectedCatalogDesignId,
   )
+
+  function handleToggleCatalog(catalogId: string, isReleased: boolean) {
+    setCatalogRelease(catalogId, isReleased)
+    setCompanyCatalogs(
+      getCatalogsWithReleaseState(company?.id ?? 'company-casa-verde'),
+    )
+  }
 
   return (
     <>
@@ -71,8 +88,40 @@ export function CatalogsPage() {
               Produtos no catalogo
             </h2>
             <span className="rounded-md bg-slate-100 px-2 py-1 text-sm font-semibold text-slate-600">
-              {products.length} itens
+              {companyCatalogs.length} catalogos
             </span>
+          </div>
+          <div className="mb-5 grid gap-3 lg:grid-cols-2">
+            {companyCatalogs.map((catalog) => (
+              <article
+                className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                key={catalog.id}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-slate-950">
+                      {catalog.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      /c/{catalog.slug} - {catalog.productsCount} produtos
+                    </p>
+                  </div>
+                  <label className="inline-flex cursor-pointer items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Liberar
+                    </span>
+                    <input
+                      checked={catalog.isReleasedToRepresentatives}
+                      className="size-4 accent-teal-700"
+                      onChange={(event) =>
+                        handleToggleCatalog(catalog.id, event.target.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </label>
+                </div>
+              </article>
+            ))}
           </div>
           <div className="divide-y divide-slate-100">
             {products.map((product, index) => (

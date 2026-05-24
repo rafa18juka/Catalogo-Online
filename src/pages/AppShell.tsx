@@ -1,14 +1,29 @@
 import { Bell, Menu, Search, Settings } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Navigate, NavLink, Outlet } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { appModules } from '../data/mock'
+import { getCurrentCompany } from '../lib/mockStore'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 export function AppShell() {
+  const company = getCurrentCompany()
+
+  if (!company) {
+    return <Navigate to="/empresa/login" replace />
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f7f2] text-slate-900">
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-slate-200 bg-white px-4 py-5 lg:block">
         <Brand />
+        <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p className="text-sm font-semibold text-slate-950">
+            {company.tradeName}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            {company.plan} - {company.paymentStatus}
+          </p>
+        </div>
         <nav className="mt-8 space-y-1">
           {appModules.map((item) => {
             const Icon = item.icon

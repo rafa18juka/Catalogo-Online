@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AdminPage } from './pages/AdminPage'
 import { AppShell } from './pages/AppShell'
 import { CatalogsPage } from './pages/CatalogsPage'
+import { CompanyAuthPage } from './pages/CompanyAuthPage'
 import { CompanyDashboardPage } from './pages/CompanyDashboardPage'
 import { CompanyDesignsPage } from './pages/CompanyDesignsPage'
 import { LoginPage } from './pages/LoginPage'
@@ -11,6 +12,7 @@ import { PrivacyPage } from './pages/PrivacyPage'
 import { ProductsPage } from './pages/ProductsPage'
 import { PublicCatalogPage } from './pages/PublicCatalogPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { RepresentativeAuthPage } from './pages/RepresentativeAuthPage'
 import { RepresentativeDashboardPage } from './pages/RepresentativeDashboardPage'
 import { RepresentativesPage } from './pages/RepresentativesPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -23,6 +25,10 @@ function App() {
       <Route path="/" element={<SurfaceRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/empresa/login" element={<CompanyAuthPage />} />
+      <Route path="/empresa/cadastro" element={<CompanyAuthPage />} />
+      <Route path="/representante/login" element={<RepresentativeAuthPage />} />
+      <Route path="/representante/cadastro" element={<RepresentativeAuthPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/c/:catalogSlug" element={<PublicCatalogPage />} />

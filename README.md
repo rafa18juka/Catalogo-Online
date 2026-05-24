@@ -34,6 +34,37 @@ Cada superficie pode rodar em uma porta propria:
 
 A raiz de cada porta redireciona para a superficie correta.
 
+## Dados ficticios para teste
+
+Empresa com acesso liberado via Stripe:
+
+- Email: `admin@casaverdeatacado.com.br`
+- Senha: `CasaVerde@123`
+
+Empresa com acesso liberado manualmente pelo dev:
+
+- Email: `gestor@novamesautilidades.com.br`
+- Senha: `NovaMesa@123`
+
+Representantes:
+
+- `cadu.rep@catalogo.test` / `RepCadu@123`
+- `marina.rep@catalogo.test` / `RepMarina@123`
+- `tiago.rep@catalogo.test` / `RepTiago@123`
+- `livia.rep@catalogo.test` / `RepLivia@123`
+
+Fluxo de teste do vinculo:
+
+1. Abra a empresa em `http://127.0.0.1:5175/`.
+2. Entre com a empresa Casa Verde.
+3. Va em `Representantes` e clique em `Gerar token`.
+4. Abra o representante em `http://127.0.0.1:5176/`.
+5. Entre com Cadu.
+6. Cole o token gerado e clique em `Vincular empresa`.
+7. Os catalogos liberados pela empresa aparecem no painel do representante.
+
+Na tela `Catalogos` da empresa, o toggle `Liberar` controla quais catalogos aparecem para representantes vinculados.
+
 ## Supabase
 
 Crie um `.env.local` a partir do `.env.example` quando o projeto Supabase for conectado:

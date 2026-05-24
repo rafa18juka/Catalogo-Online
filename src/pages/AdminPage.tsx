@@ -1,37 +1,52 @@
 import {
   AlertTriangle,
   Building2,
+  CreditCard,
   Database,
   HardDrive,
+  Plus,
   RadioTower,
   Upload,
+  Users,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Brand } from '../components/Brand'
 import { DesignPreview } from '../components/DesignPreview'
-import { catalogDesignPresets } from '../data/mock'
-
-const adminMetrics = [
-  ['Empresas ativas', '12', Database, 'text-sky-700'],
-  ['Falhas de upload', '3', AlertTriangle, 'text-amber-700'],
-  ['Storage usado', '88 GB', HardDrive, 'text-teal-700'],
-  ['Eventos hoje', '9.482', RadioTower, 'text-rose-700'],
-]
+import {
+  catalogDesignPresets,
+  companies,
+  representatives,
+} from '../data/mock'
+import {
+  getCompanyCatalogCount,
+  getRepresentativeLinks,
+} from '../lib/mockStore'
 
 const devEvents = [
-  'Empresa Importadora Exemplo publicou catalogo utilidades-2026',
-  'Representante Cadu Almeida gerou link WhatsApp',
-  'Upload de imagem TIFF recusado em Produtos',
-  'Catalogo publico carregou preset Atacado Limpo',
+  'Empresa Casa Verde Atacado aguardando catalogos liberados para reps',
+  'Stripe pronto para webhook de confirmacao de assinatura',
+  'Representante sem vinculo nao visualiza catalogos',
+  'Upload de design publicado como preset Atacado Limpo',
 ]
 
 export function AdminPage() {
+  const [manualCompanyName, setManualCompanyName] = useState('')
+  const links = getRepresentativeLinks()
+
+  const adminMetrics = [
+    ['Empresas cadastradas', String(companies.length), Database, 'text-sky-700'],
+    ['Representantes', String(representatives.length), Users, 'text-teal-700'],
+    ['Vinculos ativos', String(links.length), RadioTower, 'text-rose-700'],
+    ['Storage usado', '88 GB', HardDrive, 'text-amber-700'],
+  ] as const
+
   return (
     <main className="min-h-screen bg-[#f6f7f2]">
       <header className="border-b border-slate-200 bg-white px-5 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Brand />
           <span className="rounded-md bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-            Painel dev · porta 5174
+            Painel dev - porta 5174
           </span>
         </div>
       </header>
@@ -42,11 +57,11 @@ export function AdminPage() {
               Dev/admin
             </p>
             <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              Monitoramento e designs de catalogo
+              Empresas, representantes, pagamentos e designs
             </h1>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-              Aqui o dev acompanha o uso das empresas, recebe logs de erro e
-              publica presets de design que as empresas podem escolher.
+              O dev observa o que empresas e representantes fazem, recebe logs,
+              libera usuarios manualmente e publica presets de catalogo.
             </p>
           </div>
           <button
@@ -62,64 +77,162 @@ export function AdminPage() {
           {adminMetrics.map(([label, value, Icon, tone]) => (
             <article
               className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-              key={label as string}
+              key={label}
             >
-              <Icon className={tone as string} size={22} aria-hidden="true" />
-              <p className="mt-4 text-sm text-slate-500">{label as string}</p>
+              <Icon className={tone} size={22} aria-hidden="true" />
+              <p className="mt-4 text-sm text-slate-500">{label}</p>
               <strong className="mt-1 block text-2xl text-slate-950">
-                {value as string}
+                {value}
               </strong>
             </article>
           ))}
         </div>
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_420px]">
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-slate-950">
-                  Presets de design
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Designs criados pelo dev e liberados para empresas.
-                </p>
+          <section className="space-y-5">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="font-semibold text-slate-950">
+                    Empresas cadastradas
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Acesso ao painel depende de pagamento confirmado via Stripe
+                    ou liberacao manual.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    className="h-9 w-56 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 focus:bg-white"
+                    onChange={(event) => setManualCompanyName(event.target.value)}
+                    placeholder="Empresa via WhatsApp"
+                    value={manualCompanyName}
+                  />
+                  <button
+                    className="grid size-9 place-items-center rounded-md bg-teal-700 text-white"
+                    title="Criar empresa manual"
+                    type="button"
+                  >
+                    <Plus size={16} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
-              <button
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 hover:border-teal-600 hover:text-teal-700"
-                type="button"
-              >
-                <Building2 size={16} aria-hidden="true" />
-                Vincular empresa
-              </button>
-            </div>
-            <div className="grid gap-4 lg:grid-cols-3">
-              {catalogDesignPresets.map((design) => (
-                <article
-                  className="rounded-lg border border-slate-200 p-3"
-                  key={design.id}
-                >
-                  <DesignPreview design={design} />
-                  <div className="mt-3 flex items-start justify-between gap-2">
+              <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+                <div className="grid grid-cols-[1.2fr_1fr_160px_130px] bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  <span>Empresa</span>
+                  <span>CNPJ</span>
+                  <span>Pagamento</span>
+                  <span>Catalogos</span>
+                </div>
+                {companies.map((company) => (
+                  <div
+                    className="grid grid-cols-[1.2fr_1fr_160px_130px] border-t border-slate-100 px-3 py-3 text-sm"
+                    key={company.id}
+                  >
                     <div>
-                      <h3 className="font-semibold text-slate-950">
-                        {design.name}
-                      </h3>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
-                        {design.audience}
+                      <p className="font-semibold text-slate-950">
+                        {company.tradeName}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {company.email} - {company.password}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {company.legalName}
                       </p>
                     </div>
-                    <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-                      {design.status}
+                    <span className="text-slate-600">{company.cnpj}</span>
+                    <span>
+                      <span
+                        className={`rounded-md px-2 py-1 text-xs font-semibold ${
+                          company.paymentStatus === 'paid'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : company.paymentStatus === 'manual_active'
+                              ? 'bg-sky-50 text-sky-700'
+                              : 'bg-amber-50 text-amber-700'
+                        }`}
+                      >
+                        {company.paymentStatus}
+                      </span>
+                    </span>
+                    <span className="text-slate-600">
+                      {getCompanyCatalogCount(company.id)}
                     </span>
                   </div>
-                </article>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="font-semibold text-slate-950">
+                Representantes cadastrados
+              </h2>
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                {representatives.map((representative) => {
+                  const linkedCompanies = links
+                    .filter((link) => link.representativeId === representative.id)
+                    .map((link) =>
+                      companies.find((company) => company.id === link.companyId),
+                    )
+                    .filter(Boolean)
+
+                  return (
+                    <article
+                      className="rounded-lg border border-slate-200 p-3"
+                      key={representative.id}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-semibold text-slate-950">
+                            {representative.fullName}
+                          </h3>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {representative.email} - {representative.password}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            CPF {representative.cpf}
+                          </p>
+                        </div>
+                        <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+                          {linkedCompanies.length} empresas
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm text-slate-600">
+                        Vinculos:{' '}
+                        {linkedCompanies.length
+                          ? linkedCompanies
+                              .map((company) => company?.tradeName)
+                              .join(', ')
+                          : 'nenhum'}
+                      </p>
+                    </article>
+                  )
+                })}
+              </div>
             </div>
           </section>
 
           <aside className="space-y-5">
             <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="font-semibold text-slate-950">Atividade da empresa</h2>
+              <CreditCard className="text-teal-700" size={22} aria-hidden="true" />
+              <h2 className="mt-4 font-semibold text-slate-950">
+                Pre-conexao Stripe
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                O fluxo previsto e: compra do plano no site, webhook Stripe
+                confirma pagamento, empresa ganha acesso ao painel. Vendas por
+                WhatsApp podem ser liberadas manualmente aqui.
+              </p>
+            </section>
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="font-semibold text-slate-950">Presets de design</h2>
+              <div className="mt-4 space-y-4">
+                {catalogDesignPresets.slice(0, 2).map((design) => (
+                  <DesignPreview design={design} key={design.id} />
+                ))}
+              </div>
+            </section>
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="font-semibold text-slate-950">Atividade recente</h2>
               <div className="mt-4 divide-y divide-slate-100">
                 {devEvents.map((event) => (
                   <p className="py-3 text-sm leading-6 text-slate-600" key={event}>
@@ -134,12 +247,20 @@ export function AdminPage() {
                 size={22}
                 aria-hidden="true"
               />
-              <h2 className="mt-4 font-semibold text-amber-950">
-                Logs de erro
-              </h2>
+              <h2 className="mt-4 font-semibold text-amber-950">Logs de erro</h2>
               <p className="mt-2 text-sm leading-6 text-amber-800">
                 Falhas de upload, API lenta e problemas no catalogo publico
                 aparecem aqui para o dev agir antes do cliente reclamar.
+              </p>
+            </section>
+            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <Building2 className="text-sky-700" size={22} aria-hidden="true" />
+              <h2 className="mt-4 font-semibold text-slate-950">
+                Cadastro manual
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                O formulario ja esta posicionado para criar empresas manualmente
+                quando a venda vier pelo WhatsApp.
               </p>
             </section>
           </aside>

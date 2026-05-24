@@ -46,6 +46,47 @@ export type CatalogDesignPreset = {
   previewImage: string
 }
 
+export type CompanyAccount = {
+  id: string
+  tradeName: string
+  legalName: string
+  cnpj: string
+  responsibleName: string
+  email: string
+  password: string
+  phone: string
+  plan: string
+  paymentStatus: 'paid' | 'pending' | 'manual_active'
+  stripeCustomerId?: string
+  accessSource: 'stripe' | 'manual'
+}
+
+export type RepresentativeAccount = {
+  id: string
+  fullName: string
+  cpf: string
+  email: string
+  password: string
+  phone: string
+}
+
+export type CompanyCatalog = {
+  id: string
+  companyId: string
+  name: string
+  slug: string
+  designPresetId: string
+  isReleasedToRepresentatives: boolean
+  productsCount: number
+}
+
+export type RepresentativeLink = {
+  representativeId: string
+  companyId: string
+  token: string
+  linkedAt: string
+}
+
 export const metrics: Metric[] = [
   {
     label: 'Catalogos ativos',
@@ -180,14 +221,101 @@ export const catalogDesignPresets: CatalogDesignPreset[] = [
 
 export const selectedCatalogDesignId = 'clean-wholesale'
 
-export const linkedRepresentative = {
-  name: 'Cadu Almeida',
-  email: 'cadu@representante.com.br',
-  supplierDocument: '12.345.678/0001-90',
-  company: 'Importadora Exemplo',
-  inviteToken: 'REP-UTIL-2026',
-  shareLink: 'http://127.0.0.1:5177/c/utilidades-2026/rep-cadu',
-}
+export const companies: CompanyAccount[] = [
+  {
+    id: 'company-casa-verde',
+    tradeName: 'Casa Verde Atacado',
+    legalName: 'Casa Verde Importacao e Distribuicao LTDA',
+    cnpj: '42.318.970/0001-21',
+    responsibleName: 'Renata Azevedo',
+    email: 'admin@casaverdeatacado.com.br',
+    password: 'CasaVerde@123',
+    phone: '+55 11 98888-1000',
+    plan: 'Pro',
+    paymentStatus: 'paid',
+    stripeCustomerId: 'cus_mock_casa_verde',
+    accessSource: 'stripe',
+  },
+  {
+    id: 'company-nova-mesa',
+    tradeName: 'Nova Mesa Utilidades',
+    legalName: 'Nova Mesa Utilidades Domesticas LTDA',
+    cnpj: '18.742.530/0001-98',
+    responsibleName: 'Marcelo Fontes',
+    email: 'gestor@novamesautilidades.com.br',
+    password: 'NovaMesa@123',
+    phone: '+55 21 97777-2000',
+    plan: 'Starter',
+    paymentStatus: 'manual_active',
+    stripeCustomerId: undefined,
+    accessSource: 'manual',
+  },
+]
+
+export const representatives: RepresentativeAccount[] = [
+  {
+    id: 'rep-cadu',
+    fullName: 'Cadu Almeida Santos',
+    cpf: '111.444.777-35',
+    email: 'cadu.rep@catalogo.test',
+    password: 'RepCadu@123',
+    phone: '+55 11 96666-1001',
+  },
+  {
+    id: 'rep-marina',
+    fullName: 'Marina Lopes Freitas',
+    cpf: '529.982.247-25',
+    email: 'marina.rep@catalogo.test',
+    password: 'RepMarina@123',
+    phone: '+55 31 96666-1002',
+  },
+  {
+    id: 'rep-tiago',
+    fullName: 'Tiago Ramos Nogueira',
+    cpf: '390.533.447-05',
+    email: 'tiago.rep@catalogo.test',
+    password: 'RepTiago@123',
+    phone: '+55 41 96666-1003',
+  },
+  {
+    id: 'rep-livia',
+    fullName: 'Livia Andrade Costa',
+    cpf: '357.912.070-77',
+    email: 'livia.rep@catalogo.test',
+    password: 'RepLivia@123',
+    phone: '+55 71 96666-1004',
+  },
+]
+
+export const companyCatalogs: CompanyCatalog[] = [
+  {
+    id: 'catalog-casa-utilidades',
+    companyId: 'company-casa-verde',
+    name: 'Utilidades 2026',
+    slug: 'utilidades-2026',
+    designPresetId: 'clean-wholesale',
+    isReleasedToRepresentatives: true,
+    productsCount: 428,
+  },
+  {
+    id: 'catalog-casa-presentes',
+    companyId: 'company-casa-verde',
+    name: 'Presentes',
+    slug: 'presentes-casa-verde',
+    designPresetId: 'gift-showcase',
+    isReleasedToRepresentatives: false,
+    productsCount: 136,
+  },
+  {
+    id: 'catalog-nova-infantil',
+    companyId: 'company-nova-mesa',
+    name: 'Infantil Rapido',
+    slug: 'infantil-nova-mesa',
+    designPresetId: 'kids-fast',
+    isReleasedToRepresentatives: true,
+    productsCount: 94,
+  },
+]
 
 export const recentClients = [
   {
