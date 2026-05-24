@@ -1,0 +1,44 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { AdminPage } from './pages/AdminPage'
+import { AppShell } from './pages/AppShell'
+import { CatalogsPage } from './pages/CatalogsPage'
+import { CompanyDashboardPage } from './pages/CompanyDashboardPage'
+import { LoginPage } from './pages/LoginPage'
+import { PlanPage } from './pages/PlanPage'
+import { PricingPage } from './pages/PricingPage'
+import { PrivacyPage } from './pages/PrivacyPage'
+import { ProductsPage } from './pages/ProductsPage'
+import { PublicCatalogPage } from './pages/PublicCatalogPage'
+import { ReportsPage } from './pages/ReportsPage'
+import { RepresentativeDashboardPage } from './pages/RepresentativeDashboardPage'
+import { RepresentativesPage } from './pages/RepresentativesPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { SignupPage } from './pages/SignupPage'
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/app" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/c/:catalogSlug" element={<PublicCatalogPage />} />
+      <Route path="/c/:catalogSlug/:shareCode" element={<PublicCatalogPage />} />
+      <Route path="/app" element={<AppShell />}>
+        <Route index element={<CompanyDashboardPage />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="catalogs" element={<CatalogsPage />} />
+        <Route path="representatives" element={<RepresentativesPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="plan" element={<PlanPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
+      <Route path="/rep" element={<RepresentativeDashboardPage />} />
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="*" element={<Navigate to="/app" replace />} />
+    </Routes>
+  )
+}
+
+export default App

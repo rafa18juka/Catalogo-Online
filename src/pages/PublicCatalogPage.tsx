@@ -1,0 +1,174 @@
+import { Check, Copy, MessageCircle, Search, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { products } from '../data/mock'
+
+export function PublicCatalogPage() {
+  const { catalogSlug, shareCode } = useParams()
+  const [visitorName, setVisitorName] = useState('')
+  const [hasEntered, setHasEntered] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null,
+  )
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === selectedProductId),
+    [selectedProductId],
+  )
+
+  if (!hasEntered) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#f6f7f2] px-4 py-8">
+        <section className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mx-auto mb-5 grid size-12 place-items-center rounded-lg bg-teal-700 text-white">
+            <Check size={22} aria-hidden="true" />
+          </div>
+          <h1 className="text-center text-2xl font-semibold text-slate-950">
+            Como podemos te identificar?
+          </h1>
+          <label className="mt-5 block">
+            <span className="text-sm font-semibold text-slate-700">
+              Nome ou apelido
+            </span>
+            <input
+              className="mt-2 h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-base outline-none focus:border-teal-600 focus:bg-white"
+              onChange={(event) => setVisitorName(event.target.value)}
+              placeholder="Ex.: Cadu"
+              value={visitorName}
+            />
+          </label>
+          <button
+            className="mt-4 h-12 w-full rounded-md bg-teal-700 text-base font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            disabled={!visitorName.trim()}
+            onClick={() => setHasEntered(true)}
+            type="button"
+          >
+            Acessar catalogo
+          </button>
+          <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+            Ao continuar, voce concorda com nossa{' '}
+            <Link className="font-semibold text-teal-700" to="/privacy">
+              Politica de Privacidade
+            </Link>
+            .
+          </p>
+        </section>
+      </main>
+    )
+  }
+
+  return (
+    <main className="min-h-screen bg-[#f6f7f2]">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-semibold text-slate-950">
+              Catalogo Utilidades 2026
+            </h1>
+            <p className="truncate text-xs text-slate-500">
+              {catalogSlug} · {shareCode ?? 'link direto'}
+            </p>
+          </div>
+          <a
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#1f9d68] px-3 text-sm font-semibold text-white"
+            href="https://wa.me/"
+          >
+            <MessageCircle size={18} aria-hidden="true" />
+            Orçamento
+          </a>
+        </div>
+      </header>
+
+      <section className="mx-auto max-w-5xl px-4 py-4">
+        <div className="relative mb-4">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={18}
+            aria-hidden="true"
+          />
+          <input
+            className="h-11 w-full rounded-md border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-teal-600"
+            placeholder="Buscar produto"
+            type="search"
+          />
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => (
+            <article
+              className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
+              key={product.id}
+            >
+              <button
+                className="block aspect-square w-full overflow-hidden bg-slate-100"
+                onClick={() => setSelectedProductId(product.id)}
+                type="button"
+              >
+                <img
+                  alt={product.title}
+                  className="h-full w-full object-cover"
+                  height="480"
+                  loading="lazy"
+                  src={product.image}
+                  width="480"
+                />
+              </button>
+              <div className="p-3">
+                <h2 className="text-base font-semibold text-slate-950">
+                  {product.title}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {product.sku} · {product.category}
+                </p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="font-semibold text-slate-950">
+                    {product.price}
+                  </span>
+                  <button
+                    className="grid size-9 place-items-center rounded-md border border-slate-200 text-slate-600"
+                    title="Copiar produto"
+                    type="button"
+                  >
+                    <Copy size={16} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {selectedProduct ? (
+        <div
+          className="fixed inset-0 z-30 grid place-items-center bg-slate-950/70 p-4"
+          onClick={() => setSelectedProductId(null)}
+        >
+          <section
+            className="w-full max-w-lg overflow-hidden rounded-lg bg-white shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 p-3">
+              <h2 className="font-semibold text-slate-950">
+                {selectedProduct.title}
+              </h2>
+              <button
+                className="grid size-9 place-items-center rounded-md border border-slate-200 text-slate-600"
+                onClick={() => setSelectedProductId(null)}
+                title="Fechar"
+                type="button"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <img
+              alt={selectedProduct.title}
+              className="max-h-[70vh] w-full object-contain bg-slate-100"
+              height="900"
+              src={selectedProduct.image}
+              width="900"
+            />
+          </section>
+        </div>
+      ) : null}
+    </main>
+  )
+}
