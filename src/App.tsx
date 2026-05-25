@@ -5,6 +5,7 @@ import { CatalogsPage } from './pages/CatalogsPage'
 import { CompanyAuthPage } from './pages/CompanyAuthPage'
 import { CompanyDashboardPage } from './pages/CompanyDashboardPage'
 import { CompanyDesignsPage } from './pages/CompanyDesignsPage'
+import { DevCatalogRenderPage } from './pages/DevCatalogRenderPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlanPage } from './pages/PlanPage'
 import { PortalPage } from './pages/PortalPage'
@@ -50,6 +51,7 @@ function App() {
       <Route path="/rep-firm" element={<RepresentationFirmDashboardPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/dev" element={<AdminPage />} />
+      <Route path="/dev/render/:designId" element={<DevCatalogRenderPage />} />
       <Route path="*" element={<Navigate to="/portal" replace />} />
     </Routes>
   )

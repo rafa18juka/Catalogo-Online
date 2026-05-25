@@ -1,5 +1,6 @@
-import { Eye, FileText } from 'lucide-react'
+import { ExternalLink, Eye, FileText } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { devCatalogPreviewProducts } from '../data/devCatalogPreview'
 import {
   defaultProductDisplayOptions,
@@ -12,6 +13,13 @@ type DevCatalogVisualizerProps = {
   designs: CatalogDesignPreset[]
   selectedDesignId: string
   onSelectDesign: (designId: string) => void
+}
+
+type CatalogPreviewRendererProps = {
+  design: CatalogDesignPreset
+  products: Product[]
+  productLimit: number
+  displayOptions: ProductDisplayOptions
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -82,10 +90,10 @@ function getVisibleProductInfo(
       ? ['Medidas', product.measurements]
       : null,
     displayOptions.showMasterBox && product.masterBox
-      ? ['Caixa master', product.masterBox]
+      ? ['Master', product.masterBox]
       : null,
     displayOptions.showMinimumOrder && product.minimumOrder
-      ? ['Pedido minimo', product.minimumOrder]
+      ? ['Pedido', product.minimumOrder]
       : null,
     displayOptions.showStock && product.stock ? ['Estoque', product.stock] : null,
   ].filter((item): item is [string, string] => Boolean(item))
@@ -106,7 +114,7 @@ export function DevCatalogVisualizer({
           Visualizador de catalogo
         </h2>
         <p className="mt-2 text-sm text-slate-500">
-          Importe ou publique um design para visualizar o catalogo de teste.
+          Importe ou publique um design para renderizar o catalogo de teste.
         </p>
       </section>
     )
@@ -114,43 +122,26 @@ export function DevCatalogVisualizer({
 
   const productLimit = getDesignPreviewLimit(selectedDesign)
   const products = devCatalogPreviewProducts.slice(0, productLimit)
-  const displayOptions =
-    selectedDesign.defaultDisplayOptions ?? defaultProductDisplayOptions
-  const catalogPreview = isAuroraDesign(selectedDesign) ? (
-    <AuroraEditorialPreview
-      design={selectedDesign}
-      displayOptions={displayOptions}
-      products={products}
-      productLimit={productLimit}
-    />
-  ) : (
-    <GenericCatalogPreview
-      design={selectedDesign}
-      displayOptions={displayOptions}
-      products={products}
-      productLimit={productLimit}
-    />
-  )
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold text-teal-700">
             <Eye size={18} aria-hidden="true" />
-            Visualizador de catalogo
+            Renderizador de catalogo
           </div>
           <h2 className="mt-2 text-xl font-semibold text-slate-950">
-            Preview com produtos de teste
+            Escolha o modelo e renderize
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-            A pagina usa as imagens da pasta Imagens teste e os dados das fichas
-            tecnicas criadas para simular um catalogo real.
+            O painel dev escolhe o template. A renderizacao abre em uma pagina
+            limpa, no formato do catalogo, usando os produtos de teste.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <select
-            className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600"
+            className="h-10 min-w-56 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600"
             onChange={(event) => onSelectDesign(event.target.value)}
             value={selectedDesign.id}
           >
@@ -163,54 +154,84 @@ export function DevCatalogVisualizer({
           <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600">
             {productLimit} produtos
           </span>
+          <Link
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
+            to={`/dev/render/${selectedDesign.id}`}
+          >
+            <ExternalLink size={17} aria-hidden="true" />
+            Renderizar modelo
+          </Link>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[260px_1fr]">
-        <aside className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <img
-            alt={selectedDesign.name}
-            className="aspect-[4/3] w-full rounded-md bg-white object-cover"
-            height="240"
-            loading="lazy"
-            src={selectedDesign.previewImage}
-            width="320"
-          />
-          <h3 className="mt-3 font-semibold text-slate-950">
-            {selectedDesign.name}
-          </h3>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr]">
+        <img
+          alt={selectedDesign.name}
+          className="aspect-[4/3] w-full rounded-lg border border-slate-200 bg-white object-cover"
+          height="240"
+          loading="lazy"
+          src={selectedDesign.previewImage}
+          width="320"
+        />
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <h3 className="font-semibold text-slate-950">{selectedDesign.name}</h3>
           <p className="mt-1 text-sm leading-6 text-slate-500">
             {selectedDesign.description}
           </p>
-          <div className="mt-3 rounded-md bg-white p-3 text-sm text-slate-600">
-            <div className="flex items-center gap-2 font-semibold text-slate-800">
-              <FileText size={16} aria-hidden="true" />
-              Fichas usadas
-            </div>
-            <div className="mt-2 space-y-1">
-              {products.map((product) => (
-                <p className="truncate" key={product.id}>
-                  {product.sourceFichaPath}
-                </p>
-              ))}
-            </div>
+          <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <FileText size={16} aria-hidden="true" />
+            Produtos usados na renderizacao
           </div>
-        </aside>
-
-        {catalogPreview}
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {products.map((product) => (
+              <div
+                className="rounded-md bg-white px-3 py-2 text-sm text-slate-600"
+                key={product.id}
+              >
+                <p className="truncate font-semibold text-slate-800">
+                  {product.title}
+                </p>
+                <p className="mt-1 truncate text-xs">{product.sourceFichaPath}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )
 }
 
-type CatalogPreviewRendererProps = {
+export function DevCatalogRenderDocument({
+  design,
+}: {
   design: CatalogDesignPreset
-  products: Product[]
-  productLimit: number
-  displayOptions: ProductDisplayOptions
+}) {
+  const productLimit = getDesignPreviewLimit(design)
+  const products = devCatalogPreviewProducts.slice(0, productLimit)
+  const displayOptions = design.defaultDisplayOptions ?? defaultProductDisplayOptions
+
+  if (isAuroraDesign(design)) {
+    return (
+      <AuroraProductPage
+        design={design}
+        displayOptions={displayOptions}
+        products={products}
+        productLimit={productLimit}
+      />
+    )
+  }
+
+  return (
+    <GenericProductPage
+      design={design}
+      displayOptions={displayOptions}
+      products={products}
+      productLimit={productLimit}
+    />
+  )
 }
 
-function AuroraEditorialPreview({
+function AuroraProductPage({
   design,
   displayOptions,
   products,
@@ -228,101 +249,44 @@ function AuroraEditorialPreview({
   const isSix = productLimit === 6
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-neutral-200 p-4">
-      <div className="mb-4 rounded-lg bg-white p-4 shadow-sm">
-        <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
-          Aurora Editorial 01
-        </p>
-        <h3 className="mt-1 text-2xl font-black text-slate-950">
-          Preview do design importado
-        </h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Capa e pagina de produtos seguem o modelo Aurora salvo no Design Pack.
-        </p>
+    <AuroraPage
+      background={background}
+      paper={paper}
+      primary={primary}
+      secondary={secondary}
+    >
+      <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
+        <AuroraRibbon color={primary} label="DECOR" />
       </div>
-
-      <div className="grid gap-4 2xl:grid-cols-2">
-        <AuroraPage
-          background={background}
-          paper={paper}
-          primary={primary}
-          secondary={secondary}
+      <div className="absolute left-[6%] right-[6%] top-[13%] z-10 flex items-center justify-between">
+        <div
+          className="rounded-full bg-white px-5 py-2 text-sm font-black shadow-md"
+          style={{ color: primary }}
         >
-          <div className="absolute right-[10%] top-0 z-20">
-            <AuroraRibbon color={primary} label="AURORA" />
-          </div>
-          <div className="absolute left-[9%] top-[8%] z-10 h-[35%] w-[34%] rounded-[8%] border-[18px] border-white bg-white shadow-2xl">
-            <div className="h-[72%] rounded-[8%] bg-[#cfe2df]">
-              <div className="mx-auto translate-y-[25%] rounded-full bg-[#96c7bf] opacity-70 [aspect-ratio:1] w-[58%]" />
-            </div>
-          </div>
-          <div
-            className="absolute left-[9%] top-[54%] z-10 text-[clamp(42px,7vw,76px)] font-black leading-[0.88] tracking-[-0.06em]"
-            style={{ color: secondary }}
-          >
-            Aurora
-            <br />
-            Editorial
-          </div>
-          <div
-            className="absolute left-[9%] top-[69%] z-10 grid h-9 w-[38%] place-items-center rounded-full text-sm font-black uppercase tracking-wide text-white"
-            style={{ backgroundColor: primary }}
-          >
-            Catalogo B2B
-          </div>
-          <div className="absolute bottom-[15%] right-[11%] z-10 h-[30%] w-[34%] rounded-[9%] bg-white p-[4%] shadow-2xl">
-            <div className="h-[45%] rounded-[8%] bg-[#f2ebdf]" />
-            <div className="mt-[13%] h-5 w-[68%] rounded-full bg-slate-800" />
-            <div
-              className="mt-[8%] grid h-10 w-[78%] place-items-center rounded-full text-2xl font-black"
-              style={{ backgroundColor: `${priceColor}22`, color: priceColor }}
-            >
-              R$ 00,00
-            </div>
-          </div>
-        </AuroraPage>
-
-        <AuroraPage
-          background={background}
-          paper={paper}
-          primary={primary}
-          secondary={secondary}
-        >
-          <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-            <AuroraRibbon color={primary} label="DECOR" />
-          </div>
-          <div className="absolute left-[6%] right-[6%] top-[13%] z-10 flex items-center justify-between">
-            <div
-              className="rounded-full bg-white px-5 py-2 text-sm font-black shadow-md"
-              style={{ color: primary }}
-            >
-              Casa & Decor
-            </div>
-            <div className="rounded-full bg-white/80 px-5 py-2 text-xs font-black uppercase tracking-wide text-black/45">
-              Grade de produtos
-            </div>
-          </div>
-          <div
-            className={`absolute left-[5%] right-[5%] top-[20%] z-10 grid ${
-              isSix ? 'grid-cols-3 gap-3' : 'grid-cols-2 gap-5'
-            }`}
-          >
-            {products.map((product, index) => (
-              <AuroraProductCard
-                compact={isSix}
-                displayOptions={displayOptions}
-                index={index}
-                key={product.id}
-                priceColor={priceColor}
-                primary={primary}
-                product={product}
-              />
-            ))}
-          </div>
-          <AuroraFooter primary={primary} secondary={secondary} />
-        </AuroraPage>
+          Casa & Decor
+        </div>
+        <div className="rounded-full bg-white/80 px-5 py-2 text-xs font-black uppercase tracking-wide text-black/45">
+          Grade de produtos
+        </div>
       </div>
-    </div>
+      <div
+        className={`absolute left-[5%] right-[5%] top-[20%] z-10 grid ${
+          isSix ? 'grid-cols-3 gap-3' : 'grid-cols-2 gap-5'
+        }`}
+      >
+        {products.map((product, index) => (
+          <AuroraProductCard
+            compact={isSix}
+            displayOptions={displayOptions}
+            index={index}
+            key={product.id}
+            priceColor={priceColor}
+            primary={primary}
+            product={product}
+          />
+        ))}
+      </div>
+    </AuroraPage>
   )
 }
 
@@ -342,18 +306,16 @@ function AuroraPage({
   secondary,
 }: AuroraPageProps) {
   return (
-    <div className="mx-auto w-full max-w-[794px]">
+    <div className="mx-auto w-full max-w-[794px] print:max-w-none">
       <div
-        className="relative aspect-[794/1123] overflow-hidden rounded-lg shadow-2xl"
+        className="relative aspect-[794/1123] overflow-hidden bg-[#EEF5F4] shadow-2xl print:shadow-none"
         style={{ backgroundColor: background }}
       >
         <div
           className="absolute -left-[10%] top-[3%] h-[22%] w-[120%] -rotate-6 rounded-[50%]"
           style={{ backgroundColor: paper }}
         />
-        <div
-          className="absolute -left-[14%] top-[39%] h-[20%] w-[120%] -rotate-[11deg] rounded-[50%] bg-white/45"
-        />
+        <div className="absolute -left-[14%] top-[39%] h-[20%] w-[120%] -rotate-[11deg] rounded-[50%] bg-white/45" />
         <div
           className="absolute -left-[9%] bottom-[12%] h-[25%] w-[116%] rotate-[8deg] rounded-[50%]"
           style={{ backgroundColor: paper, opacity: 0.7 }}
@@ -531,114 +493,87 @@ function AuroraProductCard({
   )
 }
 
-function GenericCatalogPreview({
+function GenericProductPage({
   design,
   displayOptions,
   products,
   productLimit,
 }: CatalogPreviewRendererProps) {
-  const gridClass = productLimit <= 4 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'
+  const gridClass = productLimit <= 4 ? 'grid-cols-2 gap-6' : 'grid-cols-3 gap-4'
 
   return (
-    <div
-      className="overflow-hidden rounded-lg border border-slate-200"
-      style={{
-        backgroundColor: design.backgroundColor,
-        color: design.textColor,
-      }}
-    >
+    <div className="mx-auto w-full max-w-[794px] print:max-w-none">
       <div
-        className="p-5 text-white"
-        style={{ backgroundColor: design.primaryColor }}
+        className="relative aspect-[794/1123] overflow-hidden p-[6%] shadow-2xl print:shadow-none"
+        style={{
+          backgroundColor: design.backgroundColor,
+          color: design.textColor,
+        }}
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
-          Catalogo demonstrativo
-        </p>
-        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h3 className="text-2xl font-semibold">Colecao Casa 2026</h3>
-            <p className="mt-1 text-sm opacity-85">
-              Linha de teste com imagens reais do projeto
+        <div
+          className="absolute left-0 right-0 top-0 h-[16%]"
+          style={{ backgroundColor: design.primaryColor }}
+        />
+        <div className="relative z-10 flex h-full flex-col">
+          <header className="text-white">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
+              Catalogo demonstrativo
             </p>
-          </div>
-          <span
-            className="w-fit rounded-md px-3 py-2 text-sm font-semibold"
-            style={{
-              backgroundColor: design.accentColor,
-              color: '#ffffff',
-            }}
-          >
-            Pagina produto
-          </span>
-        </div>
-      </div>
+            <h1 className="mt-2 text-4xl font-semibold">Colecao Casa 2026</h1>
+          </header>
+          <div className={`mt-[8%] grid ${gridClass}`}>
+            {products.map((product) => {
+              const productInfo = getVisibleProductInfo(product, displayOptions)
 
-      <div className={`grid gap-3 p-4 ${gridClass}`}>
-        {products.map((product) => {
-          const productInfo = getVisibleProductInfo(product, displayOptions)
-
-          return (
-            <article
-              className="flex min-h-[360px] flex-col overflow-hidden rounded-lg border border-slate-200 shadow-sm"
-              key={product.id}
-              style={{ backgroundColor: design.surfaceColor }}
-            >
-              {displayOptions.showProductImage ? (
-                <img
-                  alt={product.title}
-                  className="aspect-square w-full bg-slate-100 object-cover"
-                  height="360"
-                  loading="lazy"
-                  src={product.image}
-                  width="360"
-                />
-              ) : null}
-              <div className="flex flex-1 flex-col gap-3 p-3">
-                {displayOptions.showProductName ? (
-                  <h4 className="text-sm font-semibold text-slate-950">
-                    {product.title}
-                  </h4>
-                ) : null}
-                <p className="text-xs font-semibold text-slate-500">
-                  {product.category}
-                </p>
-                <dl className="grid gap-1 text-xs text-slate-600">
-                  {productInfo.slice(0, productLimit <= 4 ? 6 : 4).map(
-                    ([label, value]) => (
-                      <div
-                        className="flex justify-between gap-2 rounded-md bg-slate-50 px-2 py-1"
-                        key={`${product.id}-${label}`}
+              return (
+                <article
+                  className="flex min-h-[330px] flex-col overflow-hidden rounded-lg border border-slate-200 shadow-sm"
+                  key={product.id}
+                  style={{ backgroundColor: design.surfaceColor }}
+                >
+                  {displayOptions.showProductImage ? (
+                    <img
+                      alt={product.title}
+                      className="aspect-square w-full bg-slate-100 object-cover"
+                      height="320"
+                      loading="lazy"
+                      src={product.image}
+                      width="320"
+                    />
+                  ) : null}
+                  <div className="flex flex-1 flex-col gap-2 p-3">
+                    {displayOptions.showProductName ? (
+                      <h2 className="text-sm font-semibold text-slate-950">
+                        {product.title}
+                      </h2>
+                    ) : null}
+                    <dl className="grid gap-1 text-[10px] text-slate-600">
+                      {productInfo.slice(0, productLimit <= 4 ? 6 : 4).map(
+                        ([label, value]) => (
+                          <div
+                            className="flex justify-between gap-2 rounded-md bg-slate-50 px-2 py-1"
+                            key={`${product.id}-${label}`}
+                          >
+                            <dt className="font-semibold">{label}</dt>
+                            <dd className="text-right">{value}</dd>
+                          </div>
+                        ),
+                      )}
+                    </dl>
+                    {displayOptions.showPrice ? (
+                      <strong
+                        className="mt-auto text-base"
+                        style={{ color: design.primaryColor }}
                       >
-                        <dt className="font-semibold">{label}</dt>
-                        <dd className="text-right">{value}</dd>
-                      </div>
-                    ),
-                  )}
-                </dl>
-                {displayOptions.showDescription ? (
-                  <p className="line-clamp-3 text-xs leading-5 text-slate-500">
-                    {product.description}
-                  </p>
-                ) : null}
-                <div className="mt-auto flex items-center justify-between gap-3">
-                  {displayOptions.showPrice ? (
-                    <strong
-                      className="text-base"
-                      style={{ color: design.primaryColor }}
-                    >
-                      {product.price}
-                    </strong>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
-                    {product.status}
-                  </span>
-                </div>
-              </div>
-            </article>
-          )
-        })}
+                        {product.price}
+                      </strong>
+                    ) : null}
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </div>
   )
