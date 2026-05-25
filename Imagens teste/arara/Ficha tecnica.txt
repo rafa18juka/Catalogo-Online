@@ -1,0 +1,16 @@
+Produto: Arara Decorativa Tropical
+SKU: ARA-204
+Codigo interno: DEC-ARA-204
+Categoria: Decoracao
+Preco: R$ 42,90
+EAN: 7898450002040
+NCM: 9503.00
+Medidas: 28 x 16 x 12 cm
+Peso: 320 g
+Caixa master: 36 unidades
+Pedido minimo: 4 unidades
+Estoque: 86 unidades
+Status: Disponivel
+Descricao: Arara decorativa em pelucia com cores vivas, ideal para composicoes tematicas, presentes e decoracao infantil.
+Observacoes: Indicado para uso decorativo em ambiente interno.
+Variacoes: Azul, vermelho, tropical

@@ -1,0 +1,16 @@
+Produto: Capim dos Pampas Natural Premium
+SKU: CDP-101
+Codigo interno: DEC-CDP-101
+Categoria: Decoracao
+Preco: R$ 36,90
+EAN: 7898450001012
+NCM: 0604.90
+Medidas: 75 x 18 x 18 cm
+Peso: 180 g
+Caixa master: 24 unidades
+Pedido minimo: 6 unidades
+Estoque: 138 unidades
+Status: Disponivel
+Descricao: Haste decorativa de capim dos pampas com acabamento natural para arranjos, vitrines e composicoes de mesa.
+Observacoes: Produto artesanal com pequenas variacoes de volume e tonalidade.
+Variacoes: Natural, champagne, areia

@@ -1,0 +1,16 @@
+Produto: Urso Xadrez para Presente
+SKU: UXA-527
+Codigo interno: PRE-UXA-527
+Categoria: Presentes
+Preco: R$ 49,90
+EAN: 7898450005270
+NCM: 9503.00
+Medidas: 32 x 22 x 18 cm
+Peso: 360 g
+Caixa master: 24 unidades
+Pedido minimo: 4 unidades
+Estoque: 91 unidades
+Status: Disponivel
+Descricao: Urso de pelucia com acabamento xadrez e visual classico para datas comemorativas, cestas e linhas de presente.
+Observacoes: Combina com embalagens sazonais e kits promocionais.
+Variacoes: Xadrez vermelho, xadrez bege

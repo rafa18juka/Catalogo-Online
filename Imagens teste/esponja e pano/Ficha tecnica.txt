@@ -1,0 +1,16 @@
+Produto: Kit Esponja e Pano Multiuso
+SKU: EPM-330
+Codigo interno: UTI-EPM-330
+Categoria: Utilidades domesticas
+Preco: R$ 12,50
+EAN: 7898450003306
+NCM: 6307.10
+Medidas: 22 x 14 x 4 cm
+Peso: 95 g
+Caixa master: 120 unidades
+Pedido minimo: 12 unidades
+Estoque: 516 unidades
+Status: Disponivel
+Descricao: Kit pratico para limpeza diaria com esponja macia e pano absorvente para cozinha, banheiro e areas de servico.
+Observacoes: Embalagem individual pronta para exposicao.
+Variacoes: Azul, verde, sortido

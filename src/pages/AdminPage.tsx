@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Brand } from '../components/Brand'
+import { DevCatalogVisualizer } from '../components/DevCatalogVisualizer'
 import { DesignPreview } from '../components/DesignPreview'
 import {
   defaultProductDisplayOptions,
@@ -215,7 +216,10 @@ async function readPreview(zip: JSZip, rootPath: string, path: string) {
 
 export function AdminPage() {
   const [manualCompanyName, setManualCompanyName] = useState('')
-  const [designs, setDesigns] = useState(getCatalogDesignPresets())
+  const [designs, setDesigns] = useState(getCatalogDesignPresets)
+  const [previewDesignId, setPreviewDesignId] = useState(
+    () => getCatalogDesignPresets()[0]?.id ?? '',
+  )
   const [packMessage, setPackMessage] = useState('')
   const [importReport, setImportReport] = useState<ImportReport | null>(null)
   const links = getRepresentativeLinks()
@@ -324,6 +328,7 @@ export function AdminPage() {
       })
 
       setDesigns(getCatalogDesignPresets())
+      setPreviewDesignId(design.id)
       setImportReport({
         name: design.name,
         status,
@@ -403,6 +408,14 @@ export function AdminPage() {
               </strong>
             </article>
           ))}
+        </div>
+
+        <div className="mt-5">
+          <DevCatalogVisualizer
+            designs={designs}
+            onSelectDesign={setPreviewDesignId}
+            selectedDesignId={previewDesignId}
+          />
         </div>
 
         <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_420px]">

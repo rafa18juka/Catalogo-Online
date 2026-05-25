@@ -1,0 +1,16 @@
+Produto: Flor Seca Algodao Decorativo
+SKU: FSA-412
+Codigo interno: DEC-FSA-412
+Categoria: Arranjos e flores secas
+Preco: R$ 29,80
+EAN: 7898450004129
+NCM: 0604.90
+Medidas: 58 x 20 x 12 cm
+Peso: 140 g
+Caixa master: 30 unidades
+Pedido minimo: 6 unidades
+Estoque: 74 unidades
+Status: Disponivel
+Descricao: Ramo de algodao seco decorativo com textura natural para arranjos, cestas, vitrines e composicoes afetivas.
+Observacoes: Manter em local seco e evitar umidade direta.
+Variacoes: Cru, natural, mix campo

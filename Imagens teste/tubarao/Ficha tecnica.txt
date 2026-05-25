@@ -1,0 +1,16 @@
+Produto: Tubarao de Pelucia Azul
+SKU: TBA-118
+Codigo interno: INF-TBA-118
+Categoria: Infantil
+Preco: R$ 58,40
+EAN: 7898450001180
+NCM: 9503.00
+Medidas: 42 x 18 x 16 cm
+Peso: 410 g
+Caixa master: 18 unidades
+Pedido minimo: 3 unidades
+Estoque: 62 unidades
+Status: Disponivel
+Descricao: Tubarao de pelucia azul com toque macio e enchimento leve, pensado para presentes, lojas infantis e vitrines ludicas.
+Observacoes: Produto sem partes rigidas aparentes.
+Variacoes: Azul claro, azul marinho
