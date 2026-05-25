@@ -43,6 +43,32 @@ type ImportReport = {
   status: CatalogDesignPreset['status']
   files: string[]
   missingFields: string[]
+  rootPath: string
+  warnings: string[]
+}
+
+const displayOptionAliases: Record<keyof ProductDisplayOptions, string[]> = {
+  showProductImage: ['showImages', 'imageUrl'],
+  showProductName: ['showProductTitle', 'title', 'name'],
+  showPrice: ['showUnitPrice', 'unitPrice', 'price'],
+  showSku: ['showCode', 'code', 'sku'],
+  showInternalCode: ['showCode', 'code', 'internalCode'],
+  showEan: ['showBarcode', 'barcode', 'ean'],
+  showNcm: ['showNcm', 'ncm'],
+  showMeasurements: ['showMeasures', 'measurements', 'type'],
+  showWeight: ['showWeight', 'weight', 'boxQty'],
+  showMasterBox: ['showMasterBoxQty', 'masterBoxQty', 'masterBox'],
+  showMinimumOrder: ['showMinimumOrder', 'minimumOrder', 'boxQty'],
+  showDescription: ['showShortDescription', 'shortDescription', 'description'],
+  showObservations: ['showObservations', 'observations', 'shortDescription'],
+  showVariations: ['showColorName', 'showColorDots', 'colorName', 'colors'],
+  showStock: [
+    'showCurrentStock',
+    'showOutOfStockBadge',
+    'currentStock',
+    'outOfStock',
+    'stock',
+  ],
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -77,24 +103,89 @@ async function readZipJson(
   return parsed
 }
 
+function findPackRoot(zip: JSZip) {
+  if (zip.file('manifest.json')) return ''
+
+  const manifestPath = Object.keys(zip.files).find((path) =>
+    path.endsWith('/manifest.json'),
+  )
+
+  if (!manifestPath) {
+    throw new Error('Arquivo manifest.json nao encontrado no pacote.')
+  }
+
+  return manifestPath.replace(/manifest\.json$/, '')
+}
+
+function resolvePackPath(rootPath: string, path: string) {
+  if (!rootPath || path.startsWith(rootPath)) return path
+
+  return `${rootPath}${path}`.replace(/\\/g, '/')
+}
+
+async function readPackJson(
+  zip: JSZip,
+  rootPath: string,
+  path: string,
+): Promise<Record<string, unknown>> {
+  return readZipJson(zip, resolvePackPath(rootPath, path))
+}
+
+function getPackFile(zip: JSZip, rootPath: string, path: string) {
+  return zip.file(resolvePackPath(rootPath, path)) ?? zip.file(path)
+}
+
+function readNestedString(
+  source: Record<string, unknown> | undefined,
+  group: string,
+  key: string,
+  fallback = '',
+) {
+  const nested = isRecord(source?.[group]) ? source[group] : undefined
+
+  return readString(nested, key, fallback)
+}
+
+function readTokenString(
+  tokens: Record<string, unknown> | undefined,
+  key: string,
+  fallback: string,
+) {
+  return readString(tokens, key, fallback)
+}
+
+function getSourceBoolean(source: Record<string, unknown>, keys: string[]) {
+  const values = keys
+    .map((key) => source[key])
+    .filter((value): value is boolean => typeof value === 'boolean')
+
+  if (values.includes(true)) return true
+  if (values.includes(false)) return false
+
+  return undefined
+}
+
 function normalizeDisplayOptions(value: unknown) {
   const source = isRecord(value) ? value : {}
   const missingFields: string[] = []
   const options = productDisplayFields.reduce((current, field) => {
-    const fieldValue = source[field.key]
+    const fieldValue = getSourceBoolean(source, [
+      field.key,
+      ...displayOptionAliases[field.key],
+    ])
 
-    if (fieldValue !== true) {
+    if (fieldValue === false) {
       missingFields.push(field.label)
     }
 
-    return { ...current, [field.key]: fieldValue === false ? false : true }
+    return { ...current, [field.key]: fieldValue !== false }
   }, {} as ProductDisplayOptions)
 
   return { options, missingFields }
 }
 
-async function readPreview(zip: JSZip, path: string) {
-  const file = zip.file(path)
+async function readPreview(zip: JSZip, rootPath: string, path: string) {
+  const file = getPackFile(zip, rootPath, path)
 
   if (!file) return { previewImage: '/sample-products/esponja-1.png' }
 
@@ -150,19 +241,34 @@ export function AdminPage() {
     try {
       setPackMessage('Validando pacote...')
       const zip = await JSZip.loadAsync(file)
-      const manifest = await readZipJson(zip, 'manifest.json')
-      const config = await readZipJson(zip, 'template.config.json')
-      const tokensFile = zip.file('design-tokens.schema.json')
+      const rootPath = findPackRoot(zip)
+      const manifest = await readPackJson(zip, rootPath, 'manifest.json')
+      const configPath =
+        readNestedString(manifest, 'entrypoints', 'config') ||
+        'template.config.json'
+      const tokensPath =
+        readNestedString(manifest, 'entrypoints', 'tokensSchema') ||
+        'design-tokens.schema.json'
+      const config = await readPackJson(zip, rootPath, configPath)
+      const tokensFile = getPackFile(zip, rootPath, tokensPath)
       const tokensSchemaJson = tokensFile
         ? ((JSON.parse(await tokensFile.async('string')) as unknown) ?? {})
+        : {}
+      const defaultTokens = isRecord(config.defaultTokens)
+        ? config.defaultTokens
         : {}
       const manifestFiles = isRecord(manifest.files) ? manifest.files : {}
       const previewPath =
         readString(manifest, 'preview') ||
         readString(manifestFiles, 'preview') ||
         'previews/preview.svg'
-      const preview = await readPreview(zip, previewPath)
+      const preview = await readPreview(zip, rootPath, previewPath)
       const packageType = readString(manifest, 'packageType')
+      const reactEntrypoint = readNestedString(
+        manifest,
+        'entrypoints',
+        'reactComponent',
+      )
 
       if (packageType !== 'catalog_template_pack') {
         throw new Error('O packageType precisa ser catalog_template_pack.')
@@ -173,6 +279,14 @@ export function AdminPage() {
         config.defaultDisplayOptions ?? defaultProductDisplayOptions,
       )
       const files = Object.keys(zip.files).filter((path) => !zip.files[path].dir)
+      const warnings = [
+        rootPath
+          ? `Pacote importado com pasta raiz: ${rootPath.replace(/\/$/, '')}`
+          : '',
+        reactEntrypoint
+          ? `Componente React encontrado: ${reactEntrypoint}. Nesta fase ele fica registrado, mas nao e executado como codigo livre.`
+          : '',
+      ].filter(Boolean)
       const status: CatalogDesignPreset['status'] = 'Rascunho'
       const design = createCatalogDesignPreset({
         templateId:
@@ -188,11 +302,15 @@ export function AdminPage() {
           readString(manifest, 'description', 'Design Pack importado pelo dev.'),
         coverStyle: readString(config, 'layoutMode', 'HTML/CSS/SVG'),
         gridStyle: readString(config, 'productLayout', 'Layout por componentes'),
-        primaryColor: '#0f766e',
-        accentColor: '#d97706',
-        backgroundColor: '#f6f7f2',
+        primaryColor: readTokenString(defaultTokens, 'primaryColor', '#0f766e'),
+        accentColor: readTokenString(defaultTokens, 'accentColor', '#d97706'),
+        backgroundColor: readTokenString(
+          defaultTokens,
+          'backgroundColor',
+          '#f6f7f2',
+        ),
         surfaceColor: '#ffffff',
-        textColor: '#0f172a',
+        textColor: readTokenString(defaultTokens, 'textColor', '#0f172a'),
         status,
         previewImage: preview.previewImage,
         previewKind: preview.previewKind ?? 'generated',
@@ -211,6 +329,8 @@ export function AdminPage() {
         status,
         files,
         missingFields: supports.missingFields,
+        rootPath,
+        warnings,
       })
       setPackMessage(
         supports.missingFields.length
@@ -513,9 +633,21 @@ export function AdminPage() {
                   <p className="mt-1 text-slate-500">
                     {importReport.files.length} arquivos encontrados
                   </p>
+                  {importReport.rootPath ? (
+                    <p className="mt-1 text-slate-500">
+                      Pasta raiz: {importReport.rootPath.replace(/\/$/, '')}
+                    </p>
+                  ) : null}
                   <p className="mt-1 text-slate-500">
                     Status inicial: {importReport.status}
                   </p>
+                  {importReport.warnings.length ? (
+                    <div className="mt-2 space-y-1 text-slate-500">
+                      {importReport.warnings.map((warning) => (
+                        <p key={warning}>{warning}</p>
+                      ))}
+                    </div>
+                  ) : null}
                   {importReport.missingFields.length ? (
                     <p className="mt-2 text-amber-700">
                       Faltam campos: {importReport.missingFields.join(', ')}
