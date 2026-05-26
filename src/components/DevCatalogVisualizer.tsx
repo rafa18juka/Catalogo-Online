@@ -215,6 +215,10 @@ function getCollectionAnchorId(collectionId: string) {
   return `colecao-${collectionId}`
 }
 
+function getSummaryAnchorId() {
+  return 'indice-colecoes'
+}
+
 function chunkProducts(products: Product[], size: number) {
   const chunks: Product[][] = []
 
@@ -620,6 +624,7 @@ function AuroraSummaryPage({
   return (
     <AuroraPage
       background={background}
+      id={getSummaryAnchorId()}
       paper={paper}
       primary={primary}
       secondary={secondary}
@@ -729,11 +734,16 @@ function AuroraCollectionIntroPage({
       secondary={secondary}
     >
       <div className="absolute right-[8%] top-0 z-20">
-        <AuroraCategoryBadge
-          collection={collection}
-          number={collectionIndex + 1}
-          size="large"
-        />
+        <a
+          aria-label="Voltar para o indice"
+          href={`#${getSummaryAnchorId()}`}
+        >
+          <AuroraCategoryBadge
+            collection={collection}
+            number={collectionIndex + 1}
+            size="large"
+          />
+        </a>
       </div>
       <div className="absolute left-[8%] top-[8%] z-10 max-w-[70%]">
         <p className="text-sm font-black uppercase tracking-[0.35em] text-black/35">
@@ -814,7 +824,12 @@ function AuroraProductGridPage({
       secondary={secondary}
     >
       <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-        <AuroraCategoryBadge collection={collection} size="compact" />
+        <a
+          aria-label="Voltar para o indice"
+          href={`#${getSummaryAnchorId()}`}
+        >
+          <AuroraCategoryBadge collection={collection} size="compact" />
+        </a>
       </div>
       <div className="absolute left-[6%] right-[6%] top-[13%] z-10 flex items-center justify-between">
         <div
