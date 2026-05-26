@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="320" viewBox="0 0 512 320" role="img" aria-label="Preview Brown Beige Modern">
+  <rect width="512" height="320" fill="#FDF8F1"/>
+  <rect x="0" y="0" width="246" height="166" fill="#EEE1D1"/>
+  <circle cx="78" cy="58" r="28" fill="#CF874F" opacity="0.35"/>
+  <rect x="86" y="90" width="112" height="22" rx="11" fill="#7C675A" opacity="0.45"/>
+  <rect x="276" y="24" width="210" height="94" fill="#01385E"/>
+  <rect x="364" y="42" width="94" height="58" fill="#EEE1D1"/>
+  <rect x="294" y="80" width="62" height="10" fill="#FDF8F1"/>
+  <rect x="294" y="96" width="54" height="14" fill="#FFFFFF"/>
+  <rect x="276" y="140" width="210" height="94" fill="#CF874F"/>
+  <rect x="364" y="158" width="94" height="58" fill="#EEE1D1"/>
+  <rect x="294" y="196" width="62" height="10" fill="#FDF8F1"/>
+  <rect x="294" y="212" width="54" height="14" fill="#FFFFFF"/>
+  <text x="30" y="230" fill="#2D2B32" font-family="Arial, sans-serif" font-size="38" font-weight="300">Casa &amp;</text>
+  <text x="30" y="272" fill="#2D2B32" font-family="Arial, sans-serif" font-size="38" font-weight="300">Decor</text>
+  <text x="30" y="300" fill="#2D2B32" font-family="Arial, sans-serif" font-size="16">Brown Beige Modern</text>
+</svg>

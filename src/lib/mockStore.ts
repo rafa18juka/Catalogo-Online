@@ -45,6 +45,15 @@ type CatalogRelease = {
 
 const defaultCatalogCoverPreset = catalogCoverPresets[0]
 
+function mergeInitialCatalogDesignPresets(designs: CatalogDesignPreset[]) {
+  const designIds = new Set(designs.map((design) => design.id))
+  const missingInitialDesigns = initialCatalogDesignPresets.filter(
+    (design) => !designIds.has(design.id),
+  )
+
+  return [...designs, ...missingInitialDesigns]
+}
+
 function readJson<T>(key: string, fallback: T): T {
   const raw = window.localStorage.getItem(key)
 
@@ -144,7 +153,9 @@ function withCatalogDefaults(catalog: CompanyCatalog): CompanyCatalog {
 }
 
 export function getCatalogDesignPresets() {
-  return readJson<CatalogDesignPreset[]>(designsKey, initialCatalogDesignPresets)
+  return mergeInitialCatalogDesignPresets(
+    readJson<CatalogDesignPreset[]>(designsKey, initialCatalogDesignPresets),
+  )
 }
 
 export function saveCatalogDesignPresets(designs: CatalogDesignPreset[]) {

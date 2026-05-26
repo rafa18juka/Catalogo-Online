@@ -17,6 +17,10 @@ import {
   isAuroraDesign,
   type CatalogCoverContent,
 } from '../catalog-designs/aurora'
+import {
+  BrownBeigeRenderer,
+  isBrownBeigeDesign,
+} from '../catalog-designs/brown-beige'
 
 type DevCatalogVisualizerProps = {
   designs: CatalogDesignPreset[]
@@ -29,7 +33,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function clampProductsPerPage(value: number) {
-  return Math.max(1, Math.min(6, value))
+  return Math.max(1, Math.min(8, value))
 }
 
 function readNumber(value: unknown) {
@@ -251,6 +255,19 @@ export function DevCatalogRenderDocument({
   if (isAuroraDesign(design)) {
     return (
       <AuroraRenderer
+        companyLogoUrl={companyLogoUrl}
+        companyName={companyName}
+        coverContent={coverContent}
+        design={design}
+        displayOptions={resolvedDisplayOptions}
+        productLimit={productLimit}
+      />
+    )
+  }
+
+  if (isBrownBeigeDesign(design)) {
+    return (
+      <BrownBeigeRenderer
         companyLogoUrl={companyLogoUrl}
         companyName={companyName}
         coverContent={coverContent}
