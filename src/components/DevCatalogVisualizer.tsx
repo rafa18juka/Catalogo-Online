@@ -436,11 +436,6 @@ function AuroraCoverPage({
         />
       </div>
 
-      <div
-        className="absolute left-[49%] top-[4%] z-20 h-[60%] w-[8px]"
-        style={{ backgroundColor: secondary }}
-      />
-
       <figure
         className="absolute left-[5%] top-[4%] z-10 h-[60%] w-[43%] overflow-hidden bg-white shadow-2xl"
         style={{ border: `8px solid ${secondary}` }}
@@ -812,12 +807,14 @@ function AuroraRibbon({
 }) {
   return (
     <div
-      className="relative grid h-36 w-28 place-items-center rounded-b-full text-white shadow-lg"
+      className={`relative grid place-items-center rounded-b-full text-white shadow-lg ${
+        logoUrl ? 'h-72 w-56' : 'h-36 w-28'
+      }`}
       style={{ backgroundColor: color }}
     >
       <div className="absolute inset-x-0 top-0 h-2 bg-white/20" />
       {logoUrl ? (
-        <div className="mx-auto flex h-[118px] w-[92px] items-center justify-center rounded-b-full bg-white/95 px-3 pb-5 pt-3 shadow-inner">
+        <div className="mx-auto flex h-[236px] w-[184px] items-center justify-center rounded-b-full bg-white/95 px-5 pb-10 pt-5 shadow-inner">
           <img
             alt={`Logotipo ${label}`}
             className="max-h-full max-w-full object-contain"
