@@ -808,16 +808,16 @@ function AuroraRibbon({
   return (
     <div
       className={`relative grid place-items-center rounded-b-full text-white shadow-lg ${
-        logoUrl ? 'h-72 w-56' : 'h-36 w-28'
+        logoUrl ? 'h-[202px] w-[157px]' : 'h-36 w-28'
       }`}
       style={{ backgroundColor: color }}
     >
       <div className="absolute inset-x-0 top-0 h-2 bg-white/20" />
       {logoUrl ? (
-        <div className="mx-auto flex h-[236px] w-[184px] items-center justify-center rounded-b-full bg-white/95 px-5 pb-10 pt-5 shadow-inner">
+        <div className="mx-auto flex h-[178px] w-[137px] items-center justify-center rounded-b-full bg-white/95 px-1 pb-6 pt-2 shadow-inner">
           <img
             alt={`Logotipo ${label}`}
-            className="max-h-full max-w-full object-contain"
+            className="h-full w-full scale-[1.35] object-contain"
             src={logoUrl}
           />
         </div>
