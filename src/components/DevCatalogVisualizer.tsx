@@ -211,6 +211,10 @@ function getCategoryBadgeFontSize(lines: string[], isLarge: boolean) {
   return Math.min(maxFont, maxFontFromWidth, maxFontFromHeight)
 }
 
+function getCollectionAnchorId(collectionId: string) {
+  return `colecao-${collectionId}`
+}
+
 function chunkProducts(products: Product[], size: number) {
   const chunks: Product[][] = []
 
@@ -662,8 +666,9 @@ function AuroraSummaryPage({
                 const itemNumber = columnIndex * midpoint + index + 1
 
                 return (
-                  <div
-                    className="flex h-14 items-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/5"
+                  <a
+                    className="flex h-14 items-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-700"
+                    href={`#${getCollectionAnchorId(collection.id)}`}
                     key={collection.id}
                   >
                     <div
@@ -683,7 +688,7 @@ function AuroraSummaryPage({
                     <div className="pr-4 text-sm font-black text-slate-400">
                       {String(itemNumber * 5).padStart(2, '0')}
                     </div>
-                  </div>
+                  </a>
                 )
               })}
             </div>
@@ -718,6 +723,7 @@ function AuroraCollectionIntroPage({
   return (
     <AuroraPage
       background={background}
+      id={getCollectionAnchorId(collection.id)}
       paper={paper}
       primary={primary}
       secondary={secondary}
@@ -845,6 +851,7 @@ function AuroraProductGridPage({
 type AuroraPageProps = {
   children: ReactNode
   background: string
+  id?: string
   paper: string
   primary: string
   secondary: string
@@ -853,12 +860,16 @@ type AuroraPageProps = {
 function AuroraPage({
   children,
   background,
+  id,
   paper,
   primary,
   secondary,
 }: AuroraPageProps) {
   return (
-    <div className="mx-auto w-full max-w-[1040px] print:max-w-none print:break-after-page">
+    <div
+      className="mx-auto w-full max-w-[1040px] scroll-mt-8 print:max-w-none print:break-after-page"
+      id={id}
+    >
       <div
         className="relative aspect-[794/1123] overflow-hidden bg-[#EEF5F4] shadow-2xl print:shadow-none"
         style={{ backgroundColor: background }}
