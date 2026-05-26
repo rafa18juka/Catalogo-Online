@@ -393,15 +393,15 @@ function AuroraCoverPage({
   const coverImages = [
     {
       alt: 'Capim dos pampas Aurora',
-      src: '/test-products/capim-dos-pampas.png',
+      src: '/test-products/capim-dos-pampas-capa.png',
     },
     {
       alt: 'Arara decorativa Aurora',
-      src: '/test-products/arara-decorativa.png',
+      src: '/test-products/arara-capa.png',
     },
     {
       alt: 'Kit esponja e pano Aurora',
-      src: '/test-products/kit-esponja-pano.png',
+      src: '/test-products/kit-esponja-pano-capa.jpeg',
     },
   ]
 
