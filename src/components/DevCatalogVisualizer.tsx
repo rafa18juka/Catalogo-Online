@@ -1,5 +1,5 @@
 import { ExternalLink, Eye, FileText } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -36,6 +36,8 @@ type CatalogCoverContent = {
   title: string
   description: string
 }
+
+type CategoryBadgeSize = 'large' | 'compact'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -143,6 +145,23 @@ function splitCoverTitle(title: string) {
     primary: firstWord.toLowerCase(),
     secondary: restWords.join(' ').toLowerCase(),
   }
+}
+
+function getCollectionBadgeVariant(collection: DevCatalogCollection) {
+  const index = Math.max(
+    0,
+    devCatalogCollections.findIndex((item) => item.id === collection.id),
+  )
+
+  return index % 5
+}
+
+function getBadgeLabel(collection: DevCatalogCollection) {
+  return collection.name
+    .replace(/&/g, 'e')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase()
 }
 
 function chunkProducts(products: Product[], size: number) {
@@ -657,7 +676,11 @@ function AuroraCollectionIntroPage({
       secondary={secondary}
     >
       <div className="absolute right-[8%] top-0 z-20">
-        <AuroraRibbon color={collection.color} label={String(collectionIndex + 1).padStart(2, '0')} />
+        <AuroraCategoryBadge
+          collection={collection}
+          number={collectionIndex + 1}
+          size="large"
+        />
       </div>
       <div className="absolute left-[8%] top-[8%] z-10 max-w-[70%]">
         <p className="text-sm font-black uppercase tracking-[0.35em] text-black/35">
@@ -738,7 +761,7 @@ function AuroraProductGridPage({
       secondary={secondary}
     >
       <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-        <AuroraRibbon color={collection.color} label={collection.name.slice(0, 5)} />
+        <AuroraCategoryBadge collection={collection} size="compact" />
       </div>
       <div className="absolute left-[6%] right-[6%] top-[13%] z-10 flex items-center justify-between">
         <div
@@ -814,6 +837,247 @@ function AuroraPage({
         {children}
       </div>
     </div>
+  )
+}
+
+function AuroraCategoryBadge({
+  collection,
+  number,
+  size = 'large',
+}: {
+  collection: DevCatalogCollection
+  number?: number
+  size?: CategoryBadgeSize
+}) {
+  const variant = getCollectionBadgeVariant(collection)
+  const label = getBadgeLabel(collection)
+  const shortLabel = label.length > 18 ? `${label.slice(0, 18)}` : label
+  const isLarge = size === 'large'
+  const outerSize = isLarge ? 'h-44 w-32' : 'h-36 w-24'
+  const iconSize = isLarge ? 'h-12 w-12' : 'h-9 w-9'
+  const labelSize = isLarge ? 'text-[12px]' : 'text-[9px]'
+  const softColor = colorWithAlpha(collection.color, '2B')
+  const paleColor = colorWithAlpha(collection.color, '18')
+
+  if (variant === 1) {
+    return (
+      <div
+        className={`relative overflow-hidden rounded-b-[40px] bg-white shadow-lg ring-1 ring-black/10 ${outerSize}`}
+      >
+        <div
+          className="absolute inset-x-0 top-0 h-[42%]"
+          style={{ backgroundColor: softColor }}
+        />
+        <div
+          className="absolute inset-x-4 top-[30%] h-px"
+          style={{ backgroundColor: collection.color }}
+        />
+        <CategoryBadgeIcon
+          className={`absolute left-1/2 top-[33%] -translate-x-1/2 ${iconSize}`}
+          icon={collection.icon}
+          stroke="currentColor"
+          style={{ color: collection.color }}
+        />
+        <p
+          className={`absolute bottom-5 left-1/2 w-[92%] -translate-x-1/2 text-center font-black uppercase leading-tight text-slate-950 ${labelSize}`}
+        >
+          {shortLabel}
+        </p>
+      </div>
+    )
+  }
+
+  if (variant === 2) {
+    return (
+      <div
+        className={`relative overflow-hidden rounded-b-[30px] shadow-lg ${outerSize}`}
+        style={{ backgroundColor: collection.color }}
+      >
+        <div className="absolute inset-x-0 top-0 h-4 bg-black/18" />
+        <div className="absolute inset-x-3 top-7 rounded-b-[28px] bg-white/12 bottom-3" />
+        <CategoryBadgeIcon
+          className={`absolute left-1/2 top-[34%] -translate-x-1/2 text-white ${iconSize}`}
+          icon={collection.icon}
+        />
+        <p
+          className={`absolute bottom-8 left-1/2 w-[105%] -translate-x-1/2 rotate-[-90deg] text-center font-bold uppercase text-white ${labelSize}`}
+        >
+          {shortLabel}
+        </p>
+      </div>
+    )
+  }
+
+  if (variant === 3) {
+    return (
+      <div className={`relative ${outerSize}`}>
+        <div
+          className="absolute inset-x-0 top-0 h-[82%] rounded-b-full shadow-lg"
+          style={{ backgroundColor: collection.color }}
+        />
+        <div className="absolute inset-x-5 top-7 grid aspect-square place-items-center rounded-full bg-white shadow-inner">
+          <CategoryBadgeIcon
+            className={iconSize}
+            icon={collection.icon}
+            stroke="currentColor"
+            style={{ color: collection.color }}
+          />
+        </div>
+        <p
+          className={`absolute bottom-5 left-1/2 w-[94%] -translate-x-1/2 rounded-full bg-white px-2 py-1 text-center font-black uppercase leading-none shadow-md ${labelSize}`}
+          style={{ color: collection.color }}
+        >
+          {shortLabel}
+        </p>
+        {number ? (
+          <span className="absolute right-2 top-5 text-xl font-black text-white/35">
+            {String(number).padStart(2, '0')}
+          </span>
+        ) : null}
+      </div>
+    )
+  }
+
+  if (variant === 4) {
+    return (
+      <div
+        className={`relative overflow-hidden rounded-b-[52px] bg-white shadow-lg ring-1 ring-black/10 ${outerSize}`}
+      >
+        <div
+          className="absolute inset-x-0 top-0 h-[52%]"
+          style={{ backgroundColor: collection.color }}
+        />
+        <div
+          className="absolute -bottom-8 left-1/2 size-28 -translate-x-1/2 rounded-full"
+          style={{ backgroundColor: paleColor }}
+        />
+        <CategoryBadgeIcon
+          className={`absolute left-1/2 top-[24%] -translate-x-1/2 text-white ${iconSize}`}
+          icon={collection.icon}
+        />
+        <p className="absolute left-1/2 top-[56%] w-[86%] -translate-x-1/2 text-center text-[10px] font-black uppercase leading-tight text-slate-900">
+          {shortLabel}
+        </p>
+        <span
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 text-xs font-black uppercase"
+          style={{ color: collection.color }}
+        >
+          Colecao
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-b-full text-white shadow-lg ${outerSize}`}
+      style={{ backgroundColor: collection.color }}
+    >
+      <div className="absolute inset-x-0 top-0 h-2 bg-white/25" />
+      <div className="absolute left-1/2 top-7 size-12 -translate-x-1/2 rounded-full bg-white/15" />
+      <CategoryBadgeIcon
+        className={`absolute left-1/2 top-[31%] -translate-x-1/2 ${iconSize}`}
+        icon={collection.icon}
+      />
+      <p
+        className={`absolute bottom-7 left-1/2 w-[104%] -translate-x-1/2 rotate-[-24deg] text-center font-bold uppercase ${labelSize}`}
+      >
+        {shortLabel}
+      </p>
+      {number ? (
+        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-black text-white/70">
+          {String(number).padStart(2, '0')}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+function colorWithAlpha(color: string, alpha: string) {
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? `${color}${alpha}` : color
+}
+
+function CategoryBadgeIcon({
+  className,
+  icon,
+  stroke = 'currentColor',
+  style,
+}: {
+  className?: string
+  icon: string
+  stroke?: string
+  style?: CSSProperties
+}) {
+  const commonProps = {
+    className,
+    fill: 'none',
+    stroke,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    strokeWidth: 1.8,
+    style,
+    viewBox: '0 0 48 48',
+  }
+
+  if (icon === 'home') {
+    return (
+      <svg {...commonProps}>
+        <path d="M8 22 24 9l16 13" />
+        <path d="M13 21v18h22V21" />
+        <path d="M20 39V27h8v12" />
+      </svg>
+    )
+  }
+
+  if (icon === 'cup') {
+    return (
+      <svg {...commonProps}>
+        <path d="M12 18h22v10a10 10 0 0 1-10 10h-2a10 10 0 0 1-10-10Z" />
+        <path d="M34 21h3a5 5 0 0 1 0 10h-3" />
+        <path d="M18 12c-2 2-2 4 0 6" />
+        <path d="M25 10c-2 3-2 5 0 8" />
+      </svg>
+    )
+  }
+
+  if (icon === 'gift') {
+    return (
+      <svg {...commonProps}>
+        <path d="M10 20h28v18H10z" />
+        <path d="M8 14h32v8H8z" />
+        <path d="M24 14v24" />
+        <path d="M24 14c-8 0-9-8-4-8 3 0 4 4 4 8Z" />
+        <path d="M24 14c8 0 9-8 4-8-3 0-4 4-4 8Z" />
+      </svg>
+    )
+  }
+
+  if (icon === 'leaf') {
+    return (
+      <svg {...commonProps}>
+        <path d="M39 9c-17 1-28 9-28 21 0 6 4 10 10 10 13 0 18-15 18-31Z" />
+        <path d="M13 36c6-10 13-16 25-22" />
+      </svg>
+    )
+  }
+
+  if (icon === 'star' || icon === 'sparkle') {
+    return (
+      <svg {...commonProps}>
+        <path d="M24 7 28.8 19.2 42 24l-13.2 4.8L24 41l-4.8-12.2L6 24l13.2-4.8Z" />
+        <path d="M38 7v8" />
+        <path d="M34 11h8" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg {...commonProps}>
+      <path d="M10 16 24 8l14 8-14 8Z" />
+      <path d="M10 16v16l14 8 14-8V16" />
+      <path d="M24 24v16" />
+      <path d="m15 19 14-8" />
+    </svg>
   )
 }
 
