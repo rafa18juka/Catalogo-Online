@@ -1,9 +1,15 @@
 import { ExternalLink, Eye, FileText } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { devCatalogPreviewProducts } from '../data/devCatalogPreview'
+import {
+  devCatalogCollections,
+  devCatalogPreviewProducts,
+  type DevCatalogCollection,
+} from '../data/devCatalogPreview'
 import {
   defaultProductDisplayOptions,
+  productDisplayFields,
   type CatalogDesignPreset,
   type Product,
   type ProductDisplayOptions,
@@ -99,6 +105,26 @@ function getVisibleProductInfo(
   ].filter((item): item is [string, string] => Boolean(item))
 }
 
+function chunkProducts(products: Product[], size: number) {
+  const chunks: Product[][] = []
+
+  for (let index = 0; index < products.length; index += size) {
+    chunks.push(products.slice(index, index + size))
+  }
+
+  return chunks
+}
+
+function buildRenderPath(designId: string, displayOptions: ProductDisplayOptions) {
+  const hiddenFields = productDisplayFields
+    .filter((field) => !displayOptions[field.key])
+    .map((field) => field.key)
+
+  return `/dev/render/${designId}${
+    hiddenFields.length ? `?hide=${hiddenFields.join(',')}` : ''
+  }`
+}
+
 export function DevCatalogVisualizer({
   designs,
   selectedDesignId,
@@ -106,6 +132,9 @@ export function DevCatalogVisualizer({
 }: DevCatalogVisualizerProps) {
   const selectedDesign =
     designs.find((design) => design.id === selectedDesignId) ?? designs[0]
+  const [displayOptions, setDisplayOptions] = useState<ProductDisplayOptions>(
+    defaultProductDisplayOptions,
+  )
 
   if (!selectedDesign) {
     return (
@@ -121,7 +150,11 @@ export function DevCatalogVisualizer({
   }
 
   const productLimit = getDesignPreviewLimit(selectedDesign)
-  const products = devCatalogPreviewProducts.slice(0, productLimit)
+  const renderPath = buildRenderPath(selectedDesign.id, displayOptions)
+
+  function toggleDisplayOption(key: keyof ProductDisplayOptions, value: boolean) {
+    setDisplayOptions((current) => ({ ...current, [key]: value }))
+  }
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -152,11 +185,11 @@ export function DevCatalogVisualizer({
             ))}
           </select>
           <span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600">
-            {productLimit} produtos
+            {productLimit} por pagina
           </span>
           <Link
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800"
-            to={`/dev/render/${selectedDesign.id}`}
+            to={renderPath}
           >
             <ExternalLink size={17} aria-hidden="true" />
             Renderizar modelo
@@ -180,21 +213,51 @@ export function DevCatalogVisualizer({
           </p>
           <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
             <FileText size={16} aria-hidden="true" />
-            Produtos usados na renderizacao
+            Dados usados na renderizacao
           </div>
           <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => (
+            {devCatalogCollections.slice(0, 6).map((collection) => (
               <div
                 className="rounded-md bg-white px-3 py-2 text-sm text-slate-600"
-                key={product.id}
+                key={collection.id}
               >
                 <p className="truncate font-semibold text-slate-800">
-                  {product.title}
+                  {collection.name}
                 </p>
-                <p className="mt-1 truncate text-xs">{product.sourceFichaPath}</p>
+                <p className="mt-1 truncate text-xs">
+                  {collection.products.length} produtos, 3 imagens por produto
+                </p>
               </div>
             ))}
           </div>
+          <p className="mt-3 text-sm text-slate-500">
+            Total: {devCatalogCollections.length} colecoes,{' '}
+            {devCatalogPreviewProducts.length} produtos.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <p className="text-sm font-semibold text-slate-950">
+          Campos visiveis na renderizacao
+        </p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {productDisplayFields.map((field) => (
+            <label
+              className="flex items-center justify-between gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+              key={field.key}
+            >
+              <span>{field.label}</span>
+              <input
+                checked={displayOptions[field.key]}
+                className="size-4 accent-teal-700"
+                onChange={(event) =>
+                  toggleDisplayOption(field.key, event.target.checked)
+                }
+                type="checkbox"
+              />
+            </label>
+          ))}
         </div>
       </div>
     </section>
@@ -203,40 +266,39 @@ export function DevCatalogVisualizer({
 
 export function DevCatalogRenderDocument({
   design,
+  displayOptions,
 }: {
   design: CatalogDesignPreset
+  displayOptions?: ProductDisplayOptions
 }) {
   const productLimit = getDesignPreviewLimit(design)
-  const products = devCatalogPreviewProducts.slice(0, productLimit)
-  const displayOptions = design.defaultDisplayOptions ?? defaultProductDisplayOptions
+  const resolvedDisplayOptions =
+    displayOptions ?? design.defaultDisplayOptions ?? defaultProductDisplayOptions
 
   if (isAuroraDesign(design)) {
     return (
-      <AuroraProductPage
+      <AuroraCatalogDocument
         design={design}
-        displayOptions={displayOptions}
-        products={products}
+        displayOptions={resolvedDisplayOptions}
         productLimit={productLimit}
       />
     )
   }
 
   return (
-    <GenericProductPage
+    <GenericCatalogDocument
       design={design}
-      displayOptions={displayOptions}
-      products={products}
+      displayOptions={resolvedDisplayOptions}
       productLimit={productLimit}
     />
   )
 }
 
-function AuroraProductPage({
+function AuroraCatalogDocument({
   design,
   displayOptions,
-  products,
   productLimit,
-}: CatalogPreviewRendererProps) {
+}: Omit<CatalogPreviewRendererProps, 'products'>) {
   const primary = readConfigToken(design, 'primaryColor', design.primaryColor)
   const secondary = readConfigToken(design, 'secondaryColor', '#0B3B57')
   const background = readConfigToken(
@@ -249,6 +311,301 @@ function AuroraProductPage({
   const isSix = productLimit === 6
 
   return (
+    <div className="space-y-8 print:space-y-0">
+      <AuroraCoverPage
+        background={background}
+        paper={paper}
+        primary={primary}
+        secondary={secondary}
+      />
+      <AuroraSummaryPage
+        background={background}
+        paper={paper}
+        primary={primary}
+        secondary={secondary}
+      />
+      {devCatalogCollections.flatMap((collection, collectionIndex) => [
+        <AuroraCollectionIntroPage
+          background={background}
+          collection={collection}
+          collectionIndex={collectionIndex}
+          displayOptions={displayOptions}
+          key={`${collection.id}-intro`}
+          paper={paper}
+          priceColor={priceColor}
+          primary={primary}
+          secondary={secondary}
+        />,
+        ...chunkProducts(collection.products, productLimit).map(
+          (products, pageIndex) => (
+            <AuroraProductGridPage
+              background={background}
+              collection={collection}
+              displayOptions={displayOptions}
+              isSix={isSix}
+              key={`${collection.id}-grid-${pageIndex}`}
+              pageIndex={pageIndex}
+              paper={paper}
+              priceColor={priceColor}
+              primary={primary}
+              products={products}
+              secondary={secondary}
+            />
+          ),
+        ),
+      ])}
+    </div>
+  )
+}
+
+function AuroraCoverPage({
+  background,
+  paper,
+  primary,
+  secondary,
+}: {
+  background: string
+  paper: string
+  primary: string
+  secondary: string
+}) {
+  const firstCollection = devCatalogCollections[0]
+
+  return (
+    <AuroraPage
+      background={background}
+      paper={paper}
+      primary={primary}
+      secondary={secondary}
+    >
+      <div className="absolute right-[10%] top-0 z-20">
+        <AuroraRibbon color={primary} label="AURORA" />
+      </div>
+      <div className="absolute left-[9%] top-[8%] z-10 h-[35%] w-[34%] overflow-hidden rounded-[8%] border-[18px] border-white bg-white shadow-2xl">
+        <img
+          alt={firstCollection.name}
+          className="h-full w-full object-cover"
+          src={firstCollection.heroImage}
+        />
+      </div>
+      <div
+        className="absolute left-[9%] top-[52%] z-10 max-w-[68%] text-[clamp(44px,7vw,78px)] font-black leading-[0.88] tracking-[-0.06em]"
+        style={{ color: secondary }}
+      >
+        Novas
+        <br />
+        Colecoes
+      </div>
+      <div
+        className="absolute left-[9%] top-[69%] z-10 grid h-9 w-[38%] place-items-center rounded-full text-sm font-black uppercase tracking-wide text-white"
+        style={{ backgroundColor: primary }}
+      >
+        Catalogo 2026
+      </div>
+      <div className="absolute bottom-[15%] right-[11%] z-10 h-[30%] w-[34%] overflow-hidden rounded-[9%] bg-white p-[4%] shadow-2xl">
+        <img
+          alt="Produto destaque"
+          className="h-[58%] w-full rounded-[8%] object-cover"
+          src={devCatalogCollections[4].products[0].image}
+        />
+        <div className="mt-[9%] h-5 w-[68%] rounded-full bg-slate-800" />
+        <div className="mt-[7%] h-10 w-[78%] rounded-full bg-sky-100" />
+      </div>
+    </AuroraPage>
+  )
+}
+
+function AuroraSummaryPage({
+  background,
+  paper,
+  primary,
+  secondary,
+}: {
+  background: string
+  paper: string
+  primary: string
+  secondary: string
+}) {
+  const midpoint = Math.ceil(devCatalogCollections.length / 2)
+  const columns = [
+    devCatalogCollections.slice(0, midpoint),
+    devCatalogCollections.slice(midpoint),
+  ]
+
+  return (
+    <AuroraPage
+      background={background}
+      paper={paper}
+      primary={primary}
+      secondary={secondary}
+    >
+      <div className="absolute left-[8%] top-[8%] z-10">
+        <p className="text-sm font-black uppercase tracking-[0.35em] text-black/40">
+          Sumario
+        </p>
+        <h1
+          className="mt-5 text-6xl font-black leading-[0.92] tracking-[-0.05em]"
+          style={{ color: secondary }}
+        >
+          Catalogo
+          <br />
+          2026
+        </h1>
+      </div>
+      <div className="absolute right-[8%] top-[8%] z-10 text-7xl font-black text-black/85">
+        20
+      </div>
+      <div className="absolute left-[8%] right-[8%] top-[31%] z-10">
+        <div className="flex items-center gap-4">
+          <div
+            className="h-10 w-10 rounded-full border-2"
+            style={{ borderColor: primary }}
+          />
+          <div className="h-px flex-1" style={{ backgroundColor: primary }} />
+        </div>
+        <div className="mt-8 grid grid-cols-2 gap-5">
+          {columns.map((column, columnIndex) => (
+            <div className="space-y-3" key={columnIndex}>
+              {column.map((collection, index) => {
+                const itemNumber = columnIndex * midpoint + index + 1
+
+                return (
+                  <div
+                    className="flex h-14 items-center overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-black/5"
+                    key={collection.id}
+                  >
+                    <div
+                      className="grid h-full w-16 place-items-center text-sm font-black text-white"
+                      style={{ backgroundColor: collection.color }}
+                    >
+                      {String(itemNumber).padStart(2, '0')}
+                    </div>
+                    <div
+                      className="min-w-0 flex-1 px-3 text-sm font-black text-slate-900"
+                    >
+                      <p className="truncate">{collection.name}</p>
+                      <p className="truncate text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                        {collection.products.length} produtos
+                      </p>
+                    </div>
+                    <div className="pr-4 text-sm font-black text-slate-400">
+                      {String(itemNumber * 5).padStart(2, '0')}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </AuroraPage>
+  )
+}
+
+function AuroraCollectionIntroPage({
+  background,
+  collection,
+  collectionIndex,
+  displayOptions,
+  paper,
+  priceColor,
+  primary,
+  secondary,
+}: {
+  background: string
+  collection: DevCatalogCollection
+  collectionIndex: number
+  displayOptions: ProductDisplayOptions
+  paper: string
+  priceColor: string
+  primary: string
+  secondary: string
+}) {
+  const featuredProducts = collection.products.slice(0, 2)
+
+  return (
+    <AuroraPage
+      background={background}
+      paper={paper}
+      primary={primary}
+      secondary={secondary}
+    >
+      <div className="absolute right-[8%] top-0 z-20">
+        <AuroraRibbon color={collection.color} label={String(collectionIndex + 1).padStart(2, '0')} />
+      </div>
+      <div className="absolute left-[8%] top-[8%] z-10 max-w-[70%]">
+        <p className="text-sm font-black uppercase tracking-[0.35em] text-black/35">
+          Colecao
+        </p>
+        <h1
+          className="mt-5 rounded-r-[40px] bg-white/80 px-7 py-5 text-6xl font-black leading-none shadow-sm"
+          style={{ color: collection.color }}
+        >
+          {collection.name}
+        </h1>
+        <p className="mt-5 max-w-[520px] text-lg font-semibold leading-tight text-black/55">
+          {collection.description}
+        </p>
+      </div>
+      <div className="absolute left-[8%] top-[31%] z-10 h-[33%] w-[53%] overflow-hidden rounded-[42px] border-[10px] border-white bg-white shadow-2xl">
+        <img
+          alt={collection.name}
+          className="h-full w-full object-cover"
+          src={collection.heroImage}
+        />
+      </div>
+      <div className="absolute bottom-[30%] right-[7%] z-10 w-[27%] rounded-[34px] bg-white/90 p-5 shadow-xl">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-black/35">
+          Linha
+        </p>
+        <p
+          className="mt-2 text-2xl font-black leading-tight"
+          style={{ color: collection.color }}
+        >
+          {collection.products.length} itens
+        </p>
+      </div>
+      <div className="absolute bottom-[12%] left-[8%] right-[8%] z-10 grid grid-cols-2 gap-8">
+        {featuredProducts.map((product, index) => (
+          <AuroraProductCard
+            compact
+            displayOptions={displayOptions}
+            index={index}
+            key={product.id}
+            priceColor={priceColor}
+            primary={collection.color}
+            product={product}
+          />
+        ))}
+      </div>
+    </AuroraPage>
+  )
+}
+
+function AuroraProductGridPage({
+  background,
+  collection,
+  displayOptions,
+  isSix,
+  pageIndex,
+  paper,
+  priceColor,
+  primary,
+  products,
+  secondary,
+}: {
+  background: string
+  collection: DevCatalogCollection
+  displayOptions: ProductDisplayOptions
+  isSix: boolean
+  pageIndex: number
+  paper: string
+  priceColor: string
+  primary: string
+  products: Product[]
+  secondary: string
+}) {
+  return (
     <AuroraPage
       background={background}
       paper={paper}
@@ -256,17 +613,17 @@ function AuroraProductPage({
       secondary={secondary}
     >
       <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-        <AuroraRibbon color={primary} label="DECOR" />
+        <AuroraRibbon color={collection.color} label={collection.name.slice(0, 5)} />
       </div>
       <div className="absolute left-[6%] right-[6%] top-[13%] z-10 flex items-center justify-between">
         <div
           className="rounded-full bg-white px-5 py-2 text-sm font-black shadow-md"
-          style={{ color: primary }}
+          style={{ color: collection.color }}
         >
-          Casa & Decor
+          {collection.name}
         </div>
         <div className="rounded-full bg-white/80 px-5 py-2 text-xs font-black uppercase tracking-wide text-black/45">
-          Grade de produtos
+          Pagina {pageIndex + 1}
         </div>
       </div>
       <div
@@ -281,7 +638,7 @@ function AuroraProductPage({
             index={index}
             key={product.id}
             priceColor={priceColor}
-            primary={primary}
+            primary={collection.color}
             product={product}
           />
         ))}
@@ -493,36 +850,40 @@ function AuroraProductCard({
   )
 }
 
-function GenericProductPage({
+function GenericCatalogDocument({
   design,
   displayOptions,
-  products,
   productLimit,
-}: CatalogPreviewRendererProps) {
+}: Omit<CatalogPreviewRendererProps, 'products'>) {
   const gridClass = productLimit <= 4 ? 'grid-cols-2 gap-6' : 'grid-cols-3 gap-4'
 
   return (
-    <div className="mx-auto w-full max-w-[794px] print:max-w-none">
-      <div
-        className="relative aspect-[794/1123] overflow-hidden p-[6%] shadow-2xl print:shadow-none"
-        style={{
-          backgroundColor: design.backgroundColor,
-          color: design.textColor,
-        }}
-      >
-        <div
-          className="absolute left-0 right-0 top-0 h-[16%]"
-          style={{ backgroundColor: design.primaryColor }}
-        />
-        <div className="relative z-10 flex h-full flex-col">
-          <header className="text-white">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
-              Catalogo demonstrativo
-            </p>
-            <h1 className="mt-2 text-4xl font-semibold">Colecao Casa 2026</h1>
-          </header>
-          <div className={`mt-[8%] grid ${gridClass}`}>
-            {products.map((product) => {
+    <div className="space-y-8 print:space-y-0">
+      {devCatalogCollections.flatMap((collection) =>
+        chunkProducts(collection.products, productLimit).map((products, pageIndex) => (
+          <div className="mx-auto w-full max-w-[794px] print:max-w-none" key={`${collection.id}-${pageIndex}`}>
+            <div
+              className="relative aspect-[794/1123] overflow-hidden p-[6%] shadow-2xl print:shadow-none"
+              style={{
+                backgroundColor: design.backgroundColor,
+                color: design.textColor,
+              }}
+            >
+              <div
+                className="absolute left-0 right-0 top-0 h-[16%]"
+                style={{ backgroundColor: design.primaryColor }}
+              />
+              <div className="relative z-10 flex h-full flex-col">
+                <header className="text-white">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] opacity-80">
+                    Catalogo demonstrativo
+                  </p>
+                  <h1 className="mt-2 text-4xl font-semibold">
+                    {collection.name}
+                  </h1>
+                </header>
+                <div className={`mt-[8%] grid ${gridClass}`}>
+                  {products.map((product) => {
               const productInfo = getVisibleProductInfo(product, displayOptions)
 
               return (
@@ -571,10 +932,13 @@ function GenericProductPage({
                   </div>
                 </article>
               )
-            })}
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        )),
+      )}
     </div>
   )
 }
