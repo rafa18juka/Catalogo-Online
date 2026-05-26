@@ -96,6 +96,10 @@ export function saveCompanies(companies: CompanyAccount[]) {
   writeJson(companiesKey, companies)
 }
 
+export function getCompanyById(companyId: string) {
+  return getCompanies().find((company) => company.id === companyId) ?? null
+}
+
 export function getRepresentatives() {
   return readJson<RepresentativeAccount[]>(representativesKey, initialRepresentatives)
 }

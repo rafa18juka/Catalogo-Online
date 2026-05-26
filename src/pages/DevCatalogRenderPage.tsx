@@ -7,6 +7,8 @@ import {
 } from '../data/mock'
 import { getCatalogDesignPresets } from '../lib/mockStore'
 
+const devCompanyLogoUrl = '/company/logos/logo-mustafar.png'
+
 function readDisplayOptionsFromSearch(hiddenFields: string | null) {
   const hiddenSet = new Set((hiddenFields ?? '').split(',').filter(Boolean))
 
@@ -42,6 +44,8 @@ export function DevCatalogRenderPage() {
   return (
     <main className="min-h-screen bg-neutral-200 px-4 py-8 print:bg-white print:p-0">
       <DevCatalogRenderDocument
+        companyLogoUrl={devCompanyLogoUrl}
+        companyName="Mustafar"
         design={selectedDesign}
         displayOptions={displayOptions}
       />

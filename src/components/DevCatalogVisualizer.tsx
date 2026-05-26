@@ -26,6 +26,8 @@ type CatalogPreviewRendererProps = {
   products: Product[]
   productLimit: number
   displayOptions: ProductDisplayOptions
+  companyLogoUrl?: string
+  companyName?: string
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -288,9 +290,13 @@ export function DevCatalogVisualizer({
 export function DevCatalogRenderDocument({
   design,
   displayOptions,
+  companyLogoUrl,
+  companyName = 'Empresa',
 }: {
   design: CatalogDesignPreset
   displayOptions?: ProductDisplayOptions
+  companyLogoUrl?: string
+  companyName?: string
 }) {
   const productLimit = getDesignPreviewLimit(design)
   const resolvedDisplayOptions =
@@ -299,6 +305,8 @@ export function DevCatalogRenderDocument({
   if (isAuroraDesign(design)) {
     return (
       <AuroraCatalogDocument
+        companyLogoUrl={companyLogoUrl}
+        companyName={companyName}
         design={design}
         displayOptions={resolvedDisplayOptions}
         productLimit={productLimit}
@@ -316,6 +324,8 @@ export function DevCatalogRenderDocument({
 }
 
 function AuroraCatalogDocument({
+  companyLogoUrl,
+  companyName,
   design,
   displayOptions,
   productLimit,
@@ -335,6 +345,8 @@ function AuroraCatalogDocument({
     <div className="space-y-8 print:space-y-0">
       <AuroraCoverPage
         background={background}
+        companyLogoUrl={companyLogoUrl}
+        companyName={companyName}
         paper={paper}
         primary={primary}
         secondary={secondary}
@@ -381,11 +393,15 @@ function AuroraCatalogDocument({
 
 function AuroraCoverPage({
   background,
+  companyLogoUrl,
+  companyName,
   paper,
   primary,
   secondary,
 }: {
   background: string
+  companyLogoUrl?: string
+  companyName?: string
   paper: string
   primary: string
   secondary: string
@@ -413,7 +429,11 @@ function AuroraCoverPage({
       secondary={secondary}
     >
       <div className="absolute right-[7%] top-0 z-30">
-        <AuroraRibbon color={primary} label="AURORA" />
+        <AuroraRibbon
+          color={primary}
+          label={companyName ?? 'Empresa'}
+          logoUrl={companyLogoUrl}
+        />
       </div>
 
       <div
@@ -518,21 +538,32 @@ function AuroraSummaryPage({
       primary={primary}
       secondary={secondary}
     >
-      <div className="absolute left-[8%] top-[8%] z-10">
+      <div className="absolute left-[8%] top-[8%] z-10 max-w-[52%]">
         <p className="text-sm font-black uppercase tracking-[0.35em] text-black/40">
           Sumario
         </p>
         <h1
-          className="mt-5 text-6xl font-black leading-[0.92] tracking-[-0.05em]"
+          className="mt-5 text-6xl font-black leading-[0.94]"
           style={{ color: secondary }}
         >
-          Catalogo
+          Colecoes
           <br />
-          2026
+          do catalogo
         </h1>
       </div>
-      <div className="absolute right-[8%] top-[8%] z-10 text-7xl font-black text-black/85">
-        20
+      <div className="absolute right-[8%] top-[10%] z-10 w-[30%] rounded-[28px] bg-white/85 p-5 shadow-xl ring-1 ring-black/5">
+        <p
+          className="text-sm font-black uppercase tracking-[0.2em]"
+          style={{ color: primary }}
+        >
+          Catalogo B2B 2026
+        </p>
+        <p className="mt-3 text-2xl font-black leading-tight text-slate-900">
+          {devCatalogCollections.length} colecoes completas
+        </p>
+        <p className="mt-3 text-sm font-semibold leading-relaxed text-slate-500">
+          Navegue pelas linhas comerciais e encontre rapidamente cada categoria.
+        </p>
       </div>
       <div className="absolute left-[8%] right-[8%] top-[31%] z-10">
         <div className="flex items-center gap-4">
@@ -770,19 +801,37 @@ function AuroraPage({
   )
 }
 
-function AuroraRibbon({ color, label }: { color: string; label: string }) {
+function AuroraRibbon({
+  color,
+  label,
+  logoUrl,
+}: {
+  color: string
+  label: string
+  logoUrl?: string
+}) {
   return (
     <div
       className="relative grid h-36 w-28 place-items-center rounded-b-full text-white shadow-lg"
       style={{ backgroundColor: color }}
     >
       <div className="absolute inset-x-0 top-0 h-2 bg-white/20" />
-      <div className="flex flex-col items-center gap-2">
-        <div className="h-12 w-12 rounded-full bg-white/15" />
-        <span className="max-w-[90px] text-center text-[11px] font-black uppercase tracking-[0.24em]">
-          {label}
-        </span>
-      </div>
+      {logoUrl ? (
+        <div className="mx-auto flex h-[118px] w-[92px] items-center justify-center rounded-b-full bg-white/95 px-3 pb-5 pt-3 shadow-inner">
+          <img
+            alt={`Logotipo ${label}`}
+            className="max-h-full max-w-full object-contain"
+            src={logoUrl}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-12 w-12 rounded-full bg-white/15" />
+          <span className="max-w-[90px] text-center text-[11px] font-black uppercase tracking-[0.24em]">
+            {label}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

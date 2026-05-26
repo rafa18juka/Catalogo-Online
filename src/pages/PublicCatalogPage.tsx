@@ -9,6 +9,7 @@ import {
 import {
   getCatalogBySlug,
   getCatalogDesignPresets,
+  getCompanyById,
   getCompanyProductsByCompanyId,
 } from '../lib/mockStore'
 
@@ -61,6 +62,7 @@ export function PublicCatalogPage() {
     null,
   )
   const catalog = getCatalogBySlug(catalogSlug ?? '')
+  const company = catalog ? getCompanyById(catalog.companyId) : null
   const catalogProducts = useMemo(
     () => (catalog ? getCompanyProductsByCompanyId(catalog.companyId) : []),
     [catalog],
@@ -138,19 +140,30 @@ export function PublicCatalogPage() {
         }}
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p
-              className="text-xs font-semibold uppercase tracking-[0.16em]"
-              style={{ color: selectedDesign.primaryColor }}
-            >
-              {selectedDesign.name}
-            </p>
-            <h1 className="truncate text-lg font-semibold">
-              {catalog?.name ?? 'Catalogo indisponivel'}
-            </h1>
-            <p className="truncate text-xs text-slate-500">
-              {catalogSlug} - {shareCode ?? 'link direto'}
-            </p>
+          <div className="flex min-w-0 items-center gap-3">
+            {company?.logoUrl ? (
+              <div className="grid size-12 shrink-0 place-items-center rounded-md border border-slate-200 bg-white p-1.5">
+                <img
+                  alt={`Logotipo ${company.tradeName}`}
+                  className="max-h-full max-w-full object-contain"
+                  src={company.logoUrl}
+                />
+              </div>
+            ) : null}
+            <div className="min-w-0">
+              <p
+                className="text-xs font-semibold uppercase tracking-[0.16em]"
+                style={{ color: selectedDesign.primaryColor }}
+              >
+                {company?.tradeName ?? selectedDesign.name}
+              </p>
+              <h1 className="truncate text-lg font-semibold">
+                {catalog?.name ?? 'Catalogo indisponivel'}
+              </h1>
+              <p className="truncate text-xs text-slate-500">
+                {catalogSlug} - {shareCode ?? 'link direto'}
+              </p>
+            </div>
           </div>
           <a
             className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold text-white"

@@ -131,6 +131,7 @@ export type CompanyAccount = {
   address: string
   plan: string
   paymentStatus: 'paid' | 'pending' | 'manual_active'
+  logoUrl?: string
   stripeCustomerId?: string
   accessSource: 'stripe' | 'manual'
 }
