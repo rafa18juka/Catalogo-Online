@@ -9,6 +9,7 @@ import {
 } from '../data/devCatalogPreview'
 import {
   defaultProductDisplayOptions,
+  catalogCoverPresets,
   productDisplayFields,
   type CatalogDesignPreset,
   type Product,
@@ -28,6 +29,12 @@ type CatalogPreviewRendererProps = {
   displayOptions: ProductDisplayOptions
   companyLogoUrl?: string
   companyName?: string
+  coverContent?: CatalogCoverContent
+}
+
+type CatalogCoverContent = {
+  title: string
+  description: string
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -126,6 +133,16 @@ function ProductColorDots({
       ))}
     </div>
   )
+}
+
+function splitCoverTitle(title: string) {
+  const words = title.trim().split(/\s+/).filter(Boolean)
+  const [firstWord = catalogCoverPresets[0].title, ...restWords] = words
+
+  return {
+    primary: firstWord.toLowerCase(),
+    secondary: restWords.join(' ').toLowerCase(),
+  }
 }
 
 function chunkProducts(products: Product[], size: number) {
@@ -292,11 +309,13 @@ export function DevCatalogRenderDocument({
   displayOptions,
   companyLogoUrl,
   companyName = 'Empresa',
+  coverContent = catalogCoverPresets[0],
 }: {
   design: CatalogDesignPreset
   displayOptions?: ProductDisplayOptions
   companyLogoUrl?: string
   companyName?: string
+  coverContent?: CatalogCoverContent
 }) {
   const productLimit = getDesignPreviewLimit(design)
   const resolvedDisplayOptions =
@@ -307,6 +326,7 @@ export function DevCatalogRenderDocument({
       <AuroraCatalogDocument
         companyLogoUrl={companyLogoUrl}
         companyName={companyName}
+        coverContent={coverContent}
         design={design}
         displayOptions={resolvedDisplayOptions}
         productLimit={productLimit}
@@ -326,6 +346,7 @@ export function DevCatalogRenderDocument({
 function AuroraCatalogDocument({
   companyLogoUrl,
   companyName,
+  coverContent,
   design,
   displayOptions,
   productLimit,
@@ -347,6 +368,7 @@ function AuroraCatalogDocument({
         background={background}
         companyLogoUrl={companyLogoUrl}
         companyName={companyName}
+        coverContent={coverContent}
         paper={paper}
         primary={primary}
         secondary={secondary}
@@ -395,6 +417,7 @@ function AuroraCoverPage({
   background,
   companyLogoUrl,
   companyName,
+  coverContent,
   paper,
   primary,
   secondary,
@@ -402,6 +425,7 @@ function AuroraCoverPage({
   background: string
   companyLogoUrl?: string
   companyName?: string
+  coverContent?: CatalogCoverContent
   paper: string
   primary: string
   secondary: string
@@ -420,6 +444,11 @@ function AuroraCoverPage({
       src: '/test-products/kit-esponja-pano-capa.jpeg',
     },
   ]
+  const coverTitle = splitCoverTitle(
+    coverContent?.title ?? catalogCoverPresets[0].title,
+  )
+  const coverDescription =
+    coverContent?.description ?? catalogCoverPresets[0].description
 
   return (
     <AuroraPage
@@ -470,32 +499,28 @@ function AuroraCoverPage({
       </figure>
 
       <div className="absolute right-[8%] top-[49%] z-20 w-[34%]">
-        <p className="text-sm font-black uppercase tracking-[0.24em] text-black/40">
-          Aurora Editorial
-        </p>
-        <div className="mt-5">
+        <div>
           <h1
             className="text-[76px] font-black italic leading-[0.74]"
             style={{ color: secondary }}
           >
-            nova
+            {coverTitle.primary}
           </h1>
-          <p
-            className="text-[38px] font-medium leading-none"
-            style={{ color: secondary }}
-          >
-            colecao
-          </p>
+          {coverTitle.secondary ? (
+            <p
+              className="text-[38px] font-medium leading-none"
+              style={{ color: secondary }}
+            >
+              {coverTitle.secondary}
+            </p>
+          ) : null}
         </div>
         <div
-          className="mt-6 grid h-10 w-[78%] place-items-center rounded-full text-sm font-black uppercase text-white shadow-lg"
+          className="mt-6 h-1.5 w-20 rounded-full"
           style={{ backgroundColor: primary }}
-        >
-          Catalogo B2B
-        </div>
-        <p className="mt-5 max-w-[280px] text-base font-semibold leading-snug text-slate-600">
-          Produtos selecionados para vitrines, presentes e linhas comerciais de
-          alto giro.
+        />
+        <p className="mt-6 max-w-[300px] text-base font-semibold leading-snug text-slate-600">
+          {coverDescription}
         </p>
       </div>
 
@@ -551,7 +576,7 @@ function AuroraSummaryPage({
           className="text-sm font-black uppercase tracking-[0.2em]"
           style={{ color: primary }}
         >
-          Catalogo B2B 2026
+          Indice de colecoes
         </p>
         <p className="mt-3 text-2xl font-black leading-tight text-slate-900">
           {devCatalogCollections.length} colecoes completas

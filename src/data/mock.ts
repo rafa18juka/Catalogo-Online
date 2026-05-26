@@ -83,6 +83,44 @@ export const defaultProductDisplayOptions: ProductDisplayOptions =
     {} as ProductDisplayOptions,
   )
 
+export type CatalogCoverPreset = {
+  id: string
+  label: string
+  title: string
+  description: string
+}
+
+export const catalogCoverPresets: CatalogCoverPreset[] = [
+  {
+    id: 'new-collection',
+    label: 'Nova Colecao',
+    title: 'Nova Colecao',
+    description:
+      'Produtos selecionados para apresentar uma linha nova com impacto visual e leitura comercial clara.',
+  },
+  {
+    id: 'news',
+    label: 'Novidades',
+    title: 'Novidades',
+    description:
+      'Lancamentos, reposicoes e itens recentes reunidos para acelerar a apresentacao ao cliente.',
+  },
+  {
+    id: 'discounts',
+    label: 'Descontos',
+    title: 'Descontos',
+    description:
+      'Condicoes especiais e oportunidades comerciais para campanhas de venda e giro rapido.',
+  },
+  {
+    id: 'custom',
+    label: 'Personalizado',
+    title: 'Colecao Especial',
+    description:
+      'Texto personalizado da empresa para explicar o foco deste catalogo.',
+  },
+]
+
 export type Metric = {
   label: string
   value: string
@@ -166,6 +204,9 @@ export type CompanyCatalog = {
   name: string
   slug: string
   designPresetId: string
+  coverTypeId: string
+  coverTitle: string
+  coverDescription: string
   displayOptions: ProductDisplayOptions
   isReleasedToRepresentatives: boolean
   productsCount: number

@@ -1,5 +1,6 @@
 import {
   companies as initialCompanies,
+  catalogCoverPresets,
   catalogDesignPresets as initialCatalogDesignPresets,
   companyCatalogs as initialCatalogs,
   defaultProductDisplayOptions,
@@ -41,6 +42,8 @@ type CatalogRelease = {
   catalogId: string
   isReleasedToRepresentatives: boolean
 }
+
+const defaultCatalogCoverPreset = catalogCoverPresets[0]
 
 function readJson<T>(key: string, fallback: T): T {
   const raw = window.localStorage.getItem(key)
@@ -120,11 +123,24 @@ export function saveRepresentationFirms(firms: RepresentationFirmAccount[]) {
 }
 
 export function getCompanyCatalogs() {
-  return readJson<CompanyCatalog[]>(catalogsKey, initialCatalogs)
+  return readJson<CompanyCatalog[]>(catalogsKey, initialCatalogs).map(
+    withCatalogDefaults,
+  )
 }
 
 export function saveCompanyCatalogs(catalogs: CompanyCatalog[]) {
   writeJson(catalogsKey, catalogs)
+}
+
+function withCatalogDefaults(catalog: CompanyCatalog): CompanyCatalog {
+  return {
+    ...catalog,
+    coverTypeId: catalog.coverTypeId ?? defaultCatalogCoverPreset.id,
+    coverTitle: catalog.coverTitle ?? defaultCatalogCoverPreset.title,
+    coverDescription:
+      catalog.coverDescription ?? defaultCatalogCoverPreset.description,
+    displayOptions: catalog.displayOptions ?? defaultProductDisplayOptions,
+  }
 }
 
 export function getCatalogDesignPresets() {
@@ -207,6 +223,9 @@ export function createCompanyCatalog(companyId: string, name = 'Novo catalogo') 
     name,
     slug: `${slugBase}-${Date.now().toString().slice(-4)}`,
     designPresetId: selectedDesign?.id ?? 'clean-wholesale',
+    coverTypeId: defaultCatalogCoverPreset.id,
+    coverTitle: defaultCatalogCoverPreset.title,
+    coverDescription: defaultCatalogCoverPreset.description,
     displayOptions:
       selectedDesign?.defaultDisplayOptions ?? defaultProductDisplayOptions,
     isReleasedToRepresentatives: false,
@@ -292,6 +311,20 @@ export function updateCompanyCatalogDisplayOptions(
   saveCompanyCatalogs(
     getCompanyCatalogs().map((catalog) =>
       catalog.id === catalogId ? { ...catalog, displayOptions } : catalog,
+    ),
+  )
+}
+
+export function updateCompanyCatalogCover(
+  catalogId: string,
+  cover: Pick<
+    CompanyCatalog,
+    'coverTypeId' | 'coverTitle' | 'coverDescription'
+  >,
+) {
+  saveCompanyCatalogs(
+    getCompanyCatalogs().map((catalog) =>
+      catalog.id === catalogId ? { ...catalog, ...cover } : catalog,
     ),
   )
 }

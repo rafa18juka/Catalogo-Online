@@ -1,7 +1,11 @@
 import { Eye, Palette, Plus, UploadCloud } from 'lucide-react'
 import { useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
-import { productDisplayFields, type ProductDisplayOptions } from '../data/mock'
+import {
+  catalogCoverPresets,
+  productDisplayFields,
+  type ProductDisplayOptions,
+} from '../data/mock'
 import {
   createCompanyCatalog,
   getCatalogsWithReleaseState,
@@ -9,6 +13,7 @@ import {
   getPublishedCatalogDesignPresets,
   setCatalogRelease,
   updateCompanyCatalogDesign,
+  updateCompanyCatalogCover,
   updateCompanyCatalogDisplayOptions,
 } from '../lib/mockStore'
 
@@ -30,6 +35,37 @@ export function CatalogsPage() {
 
   function handleDesignChange(catalogId: string, designPresetId: string) {
     updateCompanyCatalogDesign(catalogId, designPresetId)
+    refreshCatalogs()
+  }
+
+  function handleCoverPresetChange(catalogId: string, presetId: string) {
+    const preset =
+      catalogCoverPresets.find((item) => item.id === presetId) ??
+      catalogCoverPresets[0]
+
+    updateCompanyCatalogCover(catalogId, {
+      coverTypeId: preset.id,
+      coverTitle: preset.title,
+      coverDescription: preset.description,
+    })
+    refreshCatalogs()
+  }
+
+  function handleCoverTextChange(
+    catalogId: string,
+    current: {
+      coverTitle: string
+      coverDescription: string
+    },
+    key: 'coverTitle' | 'coverDescription',
+    value: string,
+  ) {
+    updateCompanyCatalogCover(catalogId, {
+      coverTypeId: 'custom',
+      coverTitle: key === 'coverTitle' ? value : current.coverTitle,
+      coverDescription:
+        key === 'coverDescription' ? value : current.coverDescription,
+    })
     refreshCatalogs()
   }
 
@@ -160,6 +196,69 @@ export function CatalogsPage() {
                           />
                         </label>
                       </div>
+                    </div>
+
+                    <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
+                      <p className="text-sm font-semibold text-slate-950">
+                        Chamada da capa
+                      </p>
+                      <div className="mt-3 grid gap-3 lg:grid-cols-[220px_1fr]">
+                        <label className="block">
+                          <span className="text-xs font-semibold text-slate-600">
+                            Tipo
+                          </span>
+                          <select
+                            className="mt-1 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600"
+                            onChange={(event) =>
+                              handleCoverPresetChange(
+                                catalog.id,
+                                event.target.value,
+                              )
+                            }
+                            value={catalog.coverTypeId}
+                          >
+                            {catalogCoverPresets.map((preset) => (
+                              <option key={preset.id} value={preset.id}>
+                                {preset.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="block">
+                          <span className="text-xs font-semibold text-slate-600">
+                            Titulo da capa
+                          </span>
+                          <input
+                            className="mt-1 h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600"
+                            onChange={(event) =>
+                              handleCoverTextChange(
+                                catalog.id,
+                                catalog,
+                                'coverTitle',
+                                event.target.value,
+                              )
+                            }
+                            value={catalog.coverTitle}
+                          />
+                        </label>
+                      </div>
+                      <label className="mt-3 block">
+                        <span className="text-xs font-semibold text-slate-600">
+                          Texto da capa
+                        </span>
+                        <textarea
+                          className="mt-1 min-h-20 w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-600"
+                          onChange={(event) =>
+                            handleCoverTextChange(
+                              catalog.id,
+                              catalog,
+                              'coverDescription',
+                              event.target.value,
+                            )
+                          }
+                          value={catalog.coverDescription}
+                        />
+                      </label>
                     </div>
 
                     <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
