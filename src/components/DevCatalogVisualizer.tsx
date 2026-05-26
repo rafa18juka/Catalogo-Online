@@ -498,7 +498,7 @@ function AuroraCoverPage({
         />
       </figure>
 
-      <div className="absolute right-[5.5%] top-[45%] z-20 w-[39%]">
+      <div className="absolute right-[5.5%] top-[52%] z-20 w-[39%]">
         <div>
           <h1
             className="text-[108px] font-black italic leading-[0.72]"
