@@ -202,11 +202,11 @@ function getCategoryBadgeLines(name: string, maxLines: number) {
 
 function getCategoryBadgeFontSize(lines: string[], isLarge: boolean) {
   const longestLineLength = Math.max(...lines.map((line) => line.length), 1)
-  const maxTextWidth = isLarge ? 104 : 76
+  const maxTextWidth = isLarge ? 116 : 88
   const maxTextHeight = isLarge ? 126 : 92
-  const maxFontFromWidth = maxTextWidth / (longestLineLength * 0.6)
-  const maxFontFromHeight = maxTextHeight / (lines.length * 0.86)
-  const maxFont = isLarge ? 31 : 22
+  const maxFontFromWidth = maxTextWidth / (longestLineLength * 0.68)
+  const maxFontFromHeight = maxTextHeight / (lines.length * 0.92)
+  const maxFont = isLarge ? 32 : 24
 
   return Math.min(maxFont, maxFontFromWidth, maxFontFromHeight)
 }
@@ -900,7 +900,7 @@ function AuroraCategoryBadge({
   const lines = getCategoryBadgeLines(collection.name, isLarge ? 5 : 4)
   const fontSize = getCategoryBadgeFontSize(lines, isLarge)
   const outerSize = isLarge ? 'h-44 w-32' : 'h-36 w-24'
-  const textInset = isLarge ? 'inset-x-3 top-7 bottom-8' : 'inset-x-2 top-6 bottom-7'
+  const textInset = isLarge ? 'inset-x-1 top-7 bottom-8' : 'inset-x-1 top-6 bottom-7'
 
   return (
     <div
@@ -917,14 +917,17 @@ function AuroraCategoryBadge({
             className={
               line === '&'
                 ? 'font-serif font-semibold opacity-90'
-                : 'font-black tracking-[0.06em]'
+                : 'font-black'
             }
             key={`${collection.id}-${line}-${index}`}
             style={{
               fontSize: `${line === '&' ? fontSize * 0.8 : fontSize}px`,
-              lineHeight: line === '&' ? 0.9 : 0.84,
+              letterSpacing: line === '&' ? 0 : '0.01em',
+              lineHeight: line === '&' ? 0.9 : 0.88,
               maxWidth: '100%',
-              overflowWrap: 'anywhere',
+              overflow: 'hidden',
+              textOverflow: 'clip',
+              whiteSpace: 'nowrap',
             }}
           >
             {line}
