@@ -390,7 +390,12 @@ function AuroraCoverPage({
   primary: string
   secondary: string
 }) {
-  const firstCollection = devCatalogCollections[0]
+  const featuredImages = [
+    '/test-products/arara-decorativa.png',
+    '/test-products/capim-dos-pampas.png',
+    '/test-products/kit-esponja-pano.png',
+    '/test-products/flor-seca-algodao.png',
+  ]
 
   return (
     <AuroraPage
@@ -399,38 +404,92 @@ function AuroraCoverPage({
       primary={primary}
       secondary={secondary}
     >
-      <div className="absolute right-[10%] top-0 z-20">
+      <div className="absolute right-[8%] top-0 z-20">
         <AuroraRibbon color={primary} label="AURORA" />
       </div>
-      <div className="absolute left-[9%] top-[8%] z-10 h-[35%] w-[34%] overflow-hidden rounded-[8%] border-[18px] border-white bg-white shadow-2xl">
-        <img
-          alt={firstCollection.name}
-          className="h-full w-full object-cover"
-          src={firstCollection.heroImage}
-        />
+
+      <div className="absolute left-[8%] top-[8%] z-10 w-[43%]">
+        <p className="text-sm font-black uppercase text-black/45">
+          Aurora Editorial
+        </p>
+        <h1
+          className="mt-5 text-[72px] font-black leading-[0.92]"
+          style={{ color: secondary }}
+        >
+          Catalogo
+          <br />
+          B2B 2026
+        </h1>
+        <p className="mt-6 max-w-[320px] text-lg font-semibold leading-snug text-slate-600">
+          Novas colecoes para vitrines, presentes e linhas comerciais de alto
+          giro.
+        </p>
       </div>
-      <div
-        className="absolute left-[9%] top-[52%] z-10 max-w-[68%] text-[clamp(44px,7vw,78px)] font-black leading-[0.88] tracking-[-0.06em]"
-        style={{ color: secondary }}
-      >
-        Novas
-        <br />
-        Colecoes
+
+      <div className="absolute right-[7%] top-[20%] z-10 h-[40%] w-[41%] rounded-[44px] bg-white/90 p-7 shadow-2xl ring-1 ring-black/5">
+        <div className="relative grid h-full grid-cols-2 grid-rows-2 gap-4">
+          {featuredImages.map((image) => (
+            <div
+              className="overflow-hidden rounded-[28px] bg-slate-50 p-3"
+              key={image}
+            >
+              <img
+                alt="Produto destaque Aurora"
+                className="h-full w-full object-contain"
+                src={image}
+              />
+            </div>
+          ))}
+        </div>
       </div>
+
       <div
-        className="absolute left-[9%] top-[69%] z-10 grid h-9 w-[38%] place-items-center rounded-full text-sm font-black uppercase tracking-wide text-white"
+        className="absolute left-[8%] top-[58%] z-10 grid h-12 w-[34%] place-items-center rounded-full text-base font-black uppercase text-white shadow-lg"
         style={{ backgroundColor: primary }}
       >
-        Catalogo 2026
+        Novas colecoes
       </div>
-      <div className="absolute bottom-[15%] right-[11%] z-10 h-[30%] w-[34%] overflow-hidden rounded-[9%] bg-white p-[4%] shadow-2xl">
-        <img
-          alt="Produto destaque"
-          className="h-[58%] w-full rounded-[8%] object-cover"
-          src={devCatalogCollections[4].products[0].image}
-        />
-        <div className="mt-[9%] h-5 w-[68%] rounded-full bg-slate-800" />
-        <div className="mt-[7%] h-10 w-[78%] rounded-full bg-sky-100" />
+
+      <div className="absolute bottom-[18%] left-[8%] right-[8%] z-10 grid grid-cols-[1.1fr_0.9fr] gap-6">
+        <div className="rounded-[34px] bg-white/85 p-6 shadow-xl ring-1 ring-black/5">
+          <p className="text-sm font-black uppercase text-black/45">
+            Dentro deste catalogo
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            {devCatalogCollections.slice(0, 6).map((collection) => (
+              <div className="flex items-center gap-3" key={collection.id}>
+                <span
+                  className="size-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: collection.color }}
+                />
+                <span className="truncate text-sm font-bold text-slate-700">
+                  {collection.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div
+          className="rounded-[34px] p-6 text-white shadow-xl"
+          style={{ backgroundColor: secondary }}
+        >
+          <p className="text-sm font-black uppercase text-white/65">
+            Curadoria
+          </p>
+          <div className="mt-3 flex items-end gap-3">
+            <span className="text-6xl font-black leading-none">20</span>
+            <span className="pb-2 text-xl font-black leading-tight">
+              colecoes
+              <br />
+              completas
+            </span>
+          </div>
+          <p className="mt-4 text-sm font-semibold leading-relaxed text-white/75">
+            Produtos organizados por linha, com informacoes comerciais prontas
+            para venda.
+          </p>
+        </div>
       </div>
     </AuroraPage>
   )
