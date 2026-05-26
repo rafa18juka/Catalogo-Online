@@ -498,28 +498,24 @@ function AuroraCoverPage({
         />
       </figure>
 
-      <div className="absolute right-[8%] top-[49%] z-20 w-[34%]">
+      <div className="absolute right-[5.5%] top-[45%] z-20 w-[39%]">
         <div>
           <h1
-            className="text-[76px] font-black italic leading-[0.74]"
+            className="text-[108px] font-black italic leading-[0.72]"
             style={{ color: secondary }}
           >
             {coverTitle.primary}
           </h1>
           {coverTitle.secondary ? (
             <p
-              className="text-[38px] font-medium leading-none"
+              className="text-[54px] font-semibold leading-[0.9]"
               style={{ color: secondary }}
             >
               {coverTitle.secondary}
             </p>
           ) : null}
         </div>
-        <div
-          className="mt-6 h-1.5 w-20 rounded-full"
-          style={{ backgroundColor: primary }}
-        />
-        <p className="mt-6 max-w-[300px] text-base font-semibold leading-snug text-slate-600">
+        <p className="mt-9 max-w-[360px] text-[22px] font-semibold leading-snug text-slate-600">
           {coverDescription}
         </p>
       </div>
