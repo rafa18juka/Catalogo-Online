@@ -598,6 +598,15 @@ function formatPrice(index: number, collectionIndex: number) {
   return `R$ ${reais},${cents}`
 }
 
+const colorPalettes = [
+  ['#0F766E', '#D8C7AA', '#F8FAFC'],
+  ['#111827', '#CBD5E1'],
+  ['#D97706', '#92400E', '#FEF3C7'],
+  ['#2563EB', '#93C5FD', '#EFF6FF'],
+  ['#BE123C', '#F9A8D4'],
+  ['#16A34A', '#BBF7D0', '#F0FDF4'],
+]
+
 function createProduct(
   collection: CollectionSeed,
   collectionIndex: number,
@@ -643,6 +652,10 @@ function createProduct(
       productIndex % 2 === 0
         ? 'Natural, areia, verde'
         : 'Branco, grafite, sortido',
+    colors:
+      productIndex % 3 === 0 || productIndex % 4 === 0
+        ? colorPalettes[(collectionIndex + productIndex) % colorPalettes.length]
+        : undefined,
     stock: `${48 + collectionIndex * 7 + productIndex * 9} unidades`,
     status: productIndex % 11 === 0 ? 'Reposicao' : 'Disponivel',
     price: formatPrice(productIndex, collectionIndex),

@@ -86,15 +86,11 @@ function getVisibleProductInfo(
   displayOptions: ProductDisplayOptions,
 ) {
   return [
-    displayOptions.showSku && product.sku ? ['SKU', product.sku] : null,
-    displayOptions.showInternalCode && product.internalCode
-      ? ['Codigo', product.internalCode]
-      : null,
     displayOptions.showEan && product.ean ? ['EAN', product.ean] : null,
-    displayOptions.showNcm && product.ncm ? ['NCM', product.ncm] : null,
     displayOptions.showMeasurements && product.measurements
       ? ['Medidas', product.measurements]
       : null,
+    displayOptions.showWeight && product.weight ? ['Peso', product.weight] : null,
     displayOptions.showMasterBox && product.masterBox
       ? ['Master', product.masterBox]
       : null,
@@ -103,6 +99,31 @@ function getVisibleProductInfo(
       : null,
     displayOptions.showStock && product.stock ? ['Estoque', product.stock] : null,
   ].filter((item): item is [string, string] => Boolean(item))
+}
+
+function ProductColorDots({
+  product,
+  size = 'normal',
+}: {
+  product: Product
+  size?: 'small' | 'normal'
+}) {
+  if (!product.colors?.length) return null
+
+  return (
+    <div className="flex justify-center gap-1.5">
+      {product.colors.map((color) => (
+        <span
+          className={`rounded-full border border-black/10 shadow-sm ${
+            size === 'small' ? 'size-3' : 'size-4'
+          }`}
+          key={`${product.id}-${color}`}
+          style={{ backgroundColor: color }}
+          title={color}
+        />
+      ))}
+    </div>
+  )
 }
 
 function chunkProducts(products: Product[], size: number) {
@@ -547,14 +568,14 @@ function AuroraCollectionIntroPage({
           {collection.description}
         </p>
       </div>
-      <div className="absolute left-[8%] top-[31%] z-10 h-[33%] w-[53%] overflow-hidden rounded-[42px] border-[10px] border-white bg-white shadow-2xl">
+      <div className="absolute left-[8%] top-[30%] z-10 h-[34%] w-[55%] overflow-hidden rounded-[42px] border-[10px] border-white bg-white shadow-2xl">
         <img
           alt={collection.name}
           className="h-full w-full object-cover"
           src={collection.heroImage}
         />
       </div>
-      <div className="absolute bottom-[30%] right-[7%] z-10 w-[27%] rounded-[34px] bg-white/90 p-5 shadow-xl">
+      <div className="absolute bottom-[31%] right-[7%] z-10 w-[27%] rounded-[34px] bg-white/90 p-5 shadow-xl">
         <p className="text-xs font-black uppercase tracking-[0.2em] text-black/35">
           Linha
         </p>
@@ -565,10 +586,9 @@ function AuroraCollectionIntroPage({
           {collection.products.length} itens
         </p>
       </div>
-      <div className="absolute bottom-[12%] left-[8%] right-[8%] z-10 grid grid-cols-2 gap-8">
+      <div className="absolute bottom-[10%] left-[7%] right-[7%] z-10 grid grid-cols-2 gap-7">
         {featuredProducts.map((product, index) => (
-          <AuroraProductCard
-            compact
+          <AuroraFeaturedProductCard
             displayOptions={displayOptions}
             index={index}
             key={product.id}
@@ -627,7 +647,7 @@ function AuroraProductGridPage({
         </div>
       </div>
       <div
-        className={`absolute left-[5%] right-[5%] top-[20%] z-10 grid ${
+        className={`absolute left-[5%] right-[5%] top-[18%] z-10 grid ${
           isSix ? 'grid-cols-3 gap-3' : 'grid-cols-2 gap-5'
         }`}
       >
@@ -663,7 +683,7 @@ function AuroraPage({
   secondary,
 }: AuroraPageProps) {
   return (
-    <div className="mx-auto w-full max-w-[794px] print:max-w-none">
+    <div className="mx-auto w-full max-w-[1040px] print:max-w-none print:break-after-page">
       <div
         className="relative aspect-[794/1123] overflow-hidden bg-[#EEF5F4] shadow-2xl print:shadow-none"
         style={{ backgroundColor: background }}
@@ -740,8 +760,86 @@ type AuroraProductCardProps = {
   displayOptions: ProductDisplayOptions
   primary: string
   priceColor: string
-  compact: boolean
+  compact?: boolean
   index: number
+}
+
+function AuroraFeaturedProductCard({
+  product,
+  displayOptions,
+  primary,
+  priceColor,
+  index,
+}: AuroraProductCardProps) {
+  const productInfo = getVisibleProductInfo(product, displayOptions)
+  const discount = index === 1 ? '30%' : ''
+
+  return (
+    <article className="relative flex min-h-[270px] overflow-hidden rounded-[34px] bg-white p-4 shadow-2xl ring-1 ring-black/5">
+      <div
+        className="absolute -left-12 -top-12 h-32 w-32 rounded-full opacity-10"
+        style={{ backgroundColor: primary }}
+      />
+      <div className="relative w-[46%] shrink-0 overflow-hidden rounded-[28px] bg-slate-100">
+        {displayOptions.showProductImage ? (
+          <img
+            alt={product.title}
+            className="h-full w-full object-cover"
+            src={product.image}
+          />
+        ) : null}
+        {displayOptions.showSku ? (
+          <div
+            className="absolute bottom-3 right-3 rounded-xl px-3 py-1.5 text-xs font-black leading-none text-white shadow-lg"
+            style={{ backgroundColor: primary }}
+          >
+            {product.sku}
+          </div>
+        ) : null}
+        {discount ? (
+          <div className="absolute right-3 top-3 grid size-12 -rotate-12 place-items-center rounded-full border-2 border-dashed border-white bg-red-600 text-[12px] font-black text-white shadow-lg">
+            {discount}
+          </div>
+        ) : null}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col pl-4 text-left">
+        {displayOptions.showProductName ? (
+          <h4 className="text-lg font-black uppercase leading-tight text-slate-950">
+            {product.title}
+          </h4>
+        ) : null}
+        <div className="my-3 h-px w-28 bg-black/20" />
+        {displayOptions.showPrice ? (
+          <div
+            className="w-fit rounded-2xl bg-white px-4 py-2 text-3xl font-black leading-none shadow-sm"
+            style={{ color: priceColor }}
+          >
+            {product.price}
+          </div>
+        ) : null}
+        {displayOptions.showVariations && product.colors?.length ? (
+          <div className="mt-3">
+            <ProductColorDots product={product} />
+          </div>
+        ) : null}
+        {displayOptions.showDescription ? (
+          <p className="mt-3 line-clamp-3 text-[11px] font-medium leading-relaxed text-black/65">
+            {product.description}
+          </p>
+        ) : null}
+        <dl className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-[9px] text-black/75">
+          {productInfo.slice(0, 6).map(([label, value]) => (
+            <div className="flex min-w-0 gap-1 leading-tight" key={label}>
+              <dt className="shrink-0 font-black uppercase text-black/55">
+                {label}:
+              </dt>
+              <dd className="min-w-0 truncate">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </article>
+  )
 }
 
 function AuroraProductCard({
@@ -756,14 +854,14 @@ function AuroraProductCard({
   const discount = index === 1 ? '30%' : index === 3 ? '15%' : ''
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-[28px] bg-white p-3 text-center shadow-xl ring-1 ring-black/5">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-[30px] bg-white p-4 text-center shadow-xl ring-1 ring-black/5">
       <div
         className="absolute -left-10 -top-10 h-24 w-24 rounded-full opacity-10"
         style={{ backgroundColor: primary }}
       />
       <div
         className={`relative overflow-hidden rounded-3xl bg-slate-100 ${
-          compact ? 'h-28' : 'h-40'
+          compact ? 'h-40' : 'h-56'
         }`}
       >
         {displayOptions.showProductImage ? (
@@ -794,7 +892,7 @@ function AuroraProductCard({
         {displayOptions.showProductName ? (
           <h4
             className={`mx-auto max-w-[94%] font-black uppercase leading-tight ${
-              compact ? 'min-h-[30px] text-[10px]' : 'min-h-[38px] text-sm'
+              compact ? 'min-h-[34px] text-[11px]' : 'min-h-[42px] text-[15px]'
             }`}
           >
             {product.title}
@@ -804,28 +902,22 @@ function AuroraProductCard({
         {displayOptions.showPrice ? (
           <div
             className={`mx-auto rounded-2xl bg-white px-4 py-2 text-center font-black leading-none shadow-sm ${
-              compact ? 'text-xl' : 'text-3xl'
+              compact ? 'text-2xl' : 'text-3xl'
             }`}
             style={{ color: priceColor }}
           >
             {product.price}
           </div>
         ) : null}
-        {displayOptions.showVariations ? (
-          <div className="mt-2 flex justify-center gap-1.5">
-            {['#0F766E', '#D8C7AA', '#E7E5E4'].map((color) => (
-              <span
-                className="h-4 w-4 rounded-full border border-black/10 shadow-sm"
-                key={`${product.id}-${color}`}
-                style={{ backgroundColor: color }}
-              />
-            ))}
+        {displayOptions.showVariations && product.colors?.length ? (
+          <div className="mt-2">
+            <ProductColorDots product={product} size={compact ? 'small' : 'normal'} />
           </div>
         ) : null}
         {displayOptions.showDescription ? (
           <p
             className={`mt-2 line-clamp-2 font-medium leading-tight text-black/65 ${
-              compact ? 'text-[7px]' : 'text-[9px]'
+              compact ? 'text-[8px]' : 'text-[10px]'
             }`}
           >
             {product.description}
@@ -833,7 +925,7 @@ function AuroraProductCard({
         ) : null}
         <dl
           className={`mt-auto grid grid-cols-2 pt-2 text-left ${
-            compact ? 'gap-x-2 gap-y-0.5 text-[7px]' : 'gap-x-3 gap-y-1 text-[8px]'
+            compact ? 'gap-x-2 gap-y-0.5 text-[8px]' : 'gap-x-3 gap-y-1 text-[9px]'
           }`}
         >
           {productInfo.slice(0, compact ? 6 : 8).map(([label, value]) => (

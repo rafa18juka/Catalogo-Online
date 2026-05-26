@@ -18,6 +18,7 @@ type ProductForm = {
   minimumOrder: string
   observations: string
   variations: string
+  colors: string
   stock: string
   price: string
   status: string
@@ -38,6 +39,7 @@ const emptyForm: ProductForm = {
   minimumOrder: '',
   observations: '',
   variations: '',
+  colors: '',
   stock: '',
   price: '',
   status: 'Disponivel',
@@ -92,6 +94,7 @@ export function ProductsPage() {
       minimumOrder: form.minimumOrder,
       observations: form.observations,
       variations: form.variations,
+      colors: parseColors(form.colors),
       stock: form.stock,
       price: form.price ? `R$ ${form.price}` : 'Sem preco',
       status: form.status,
@@ -203,6 +206,11 @@ export function ProductsPage() {
               onChange={(value) => updateField('variations', value)}
               value={form.variations}
             />
+            <Field
+              label="Cores HEX"
+              onChange={(value) => updateField('colors', value)}
+              value={form.colors}
+            />
           </div>
           <label className="mt-4 block">
             <span className="text-sm font-semibold text-slate-700">
@@ -295,6 +303,13 @@ export function ProductsPage() {
       </section>
     </>
   )
+}
+
+function parseColors(value: string) {
+  return value
+    .split(',')
+    .map((color) => color.trim())
+    .filter((color) => /^#[0-9a-fA-F]{6}$/.test(color))
 }
 
 type FieldProps = {

@@ -32,6 +32,7 @@ export type Product = {
   price: string
   image: string
   images?: string[]
+  colors?: string[]
   attention: number
 }
 

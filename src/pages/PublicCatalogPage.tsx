@@ -36,6 +36,23 @@ function getProductInfo(product: Product, displayOptions: ProductDisplayOptions)
   ].filter((item): item is [string, string] => Boolean(item))
 }
 
+function ProductColorSwatches({ product }: { product: Product }) {
+  if (!product.colors?.length) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {product.colors.map((color) => (
+        <span
+          className="size-4 rounded-full border border-slate-200 shadow-sm"
+          key={`${product.id}-${color}`}
+          style={{ backgroundColor: color }}
+          title={color}
+        />
+      ))}
+    </div>
+  )
+}
+
 export function PublicCatalogPage() {
   const { catalogSlug, shareCode } = useParams()
   const [visitorName, setVisitorName] = useState('')
@@ -209,10 +226,16 @@ export function PublicCatalogPage() {
                       {product.description}
                     </p>
                   ) : null}
-                  {displayOptions.showVariations && product.variations ? (
-                    <p className="text-sm text-slate-500">
-                      Variacoes: {product.variations}
-                    </p>
+                  {displayOptions.showVariations &&
+                  (product.variations || product.colors?.length) ? (
+                    <div className="space-y-2">
+                      <ProductColorSwatches product={product} />
+                      {product.variations ? (
+                        <p className="text-sm text-slate-500">
+                          Variacoes: {product.variations}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : null}
                   {displayOptions.showObservations && product.observations ? (
                     <p className="text-sm text-slate-500">
