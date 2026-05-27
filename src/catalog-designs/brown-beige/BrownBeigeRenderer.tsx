@@ -11,6 +11,8 @@ import {
 import { readBrownBeigeTokens } from './tokens'
 import type { BrownBeigeRendererProps, CatalogCoverContent } from './types'
 
+const brownBeigeDefaultCoverTitle = 'Lancamentos e novidades'
+
 function getVisibleProductInfo(
   product: Product,
   displayOptions: ProductDisplayOptions,
@@ -54,20 +56,40 @@ function formatPriceForDesign(price: string) {
 }
 
 function splitCoverTitle(title: string) {
-  const normalized = title.trim() || catalogCoverPresets[0].title
+  const normalized = title.trim() || brownBeigeDefaultCoverTitle
+  const ampersandParts = normalized.split(/\s*&\s*/).filter(Boolean)
+
+  if (ampersandParts.length === 2) {
+    return {
+      primary: ampersandParts[0],
+      connector: '&',
+      secondary: ampersandParts[1],
+    }
+  }
+
+  const eMatch = normalized.match(/^(.+?)\s+e\s+(.+)$/i)
+
+  if (eMatch) {
+    return {
+      primary: eMatch[1],
+      connector: 'e',
+      secondary: eMatch[2],
+    }
+  }
+
   const parts = normalized
-    .replace(/\s*&\s*/g, ' & ')
     .split(/\s+/)
     .filter(Boolean)
 
   if (parts.length <= 1) {
-    return { primary: normalized, secondary: '' }
+    return { primary: normalized, connector: '', secondary: '' }
   }
 
   const midpoint = Math.ceil(parts.length / 2)
 
   return {
     primary: parts.slice(0, midpoint).join(' '),
+    connector: '&',
     secondary: parts.slice(midpoint).join(' '),
   }
 }
@@ -150,7 +172,7 @@ function BrownBeigeCoverPage({
     .map((collection) => collection.products[0])
     .filter(Boolean)
   const coverTitle = splitCoverTitle(
-    coverContent?.title ?? catalogCoverPresets[0].title,
+    coverContent?.title ?? brownBeigeDefaultCoverTitle,
   )
   const coverDescription =
     coverContent?.description ?? catalogCoverPresets[0].description
@@ -208,7 +230,9 @@ function BrownBeigeCoverPage({
           {coverTitle.primary}
           {coverTitle.secondary ? (
             <>
-              <br />&<br />
+              <br />
+              {coverTitle.connector}
+              <br />
               {coverTitle.secondary}
             </>
           ) : null}
