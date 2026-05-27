@@ -166,13 +166,13 @@ function BrownBeigeCoverPage({
       </div>
 
       <section
-        className="absolute right-[3.5%] top-[4.2%] h-[29%] w-[41%] p-8 text-white"
+        className="absolute right-[3.5%] top-[4.2%] h-[29%] w-[41%] text-white"
         style={{ backgroundColor: tokens.secondary }}
       >
-        <p className="relative z-10 text-lg font-medium">
+        <p className="absolute left-8 top-8 z-10 line-clamp-2 max-w-[43%] text-lg font-medium">
           {coverTitle.primary || 'Novidade'}
         </p>
-        <p className="relative z-10 mt-16 max-w-[150px] text-sm font-medium leading-tight">
+        <p className="absolute left-8 top-[42%] z-10 line-clamp-8 max-w-[42%] text-[13px] font-semibold leading-[1.12]">
           {coverDescription}
         </p>
         <div className="absolute bottom-8 left-8 z-10 bg-white px-3 py-1 text-lg text-slate-900">
@@ -180,7 +180,7 @@ function BrownBeigeCoverPage({
         </div>
         <img
           alt={featuredProducts[1]?.title ?? 'Produto'}
-          className="absolute right-8 top-12 z-0 h-[63%] w-[45%] object-cover"
+          className="absolute right-7 top-12 z-0 h-[63%] w-[39%] object-cover"
           src={featuredProducts[1]?.image ?? devCatalogCollections[1].heroImage}
         />
       </section>
@@ -215,21 +215,21 @@ function BrownBeigeCoverPage({
         </h1>
       </div>
 
-      <div className="absolute bottom-[9%] left-[10%] flex items-center gap-5 text-[#2D2B32]">
+      <div className="absolute bottom-[7.8%] left-0 flex h-28 items-center text-[#2D2B32]">
         {companyLogoUrl ? (
-          <div className="grid h-20 w-28 place-items-center bg-white p-2 shadow-sm">
+          <div className="flex h-24 w-56 items-center justify-end rounded-r-full bg-white py-3 pl-8 pr-9 shadow-lg ring-1 ring-black/5">
             <img
               alt={`Logotipo ${companyName ?? 'Empresa'}`}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-[145px] object-contain"
               src={companyLogoUrl}
             />
           </div>
         ) : null}
-        <div>
+        <div className="ml-7 min-w-0">
           <p className="text-2xl font-light">
             {companyName ? companyName.toLowerCase() : 'marca da empresa'}
           </p>
-          <p className="mt-4 max-w-[300px] truncate text-xl font-light">
+          <p className="mt-4 max-w-[340px] truncate text-lg font-light">
             www.site-da-empresa.com.br
           </p>
         </div>
@@ -249,11 +249,13 @@ function BrownBeigeMiniFeature({
 
   return (
     <section
-      className="absolute h-[29%] w-[41%] p-8 text-white"
+      className="absolute h-[29%] w-[41%] text-white"
       style={style}
     >
-      <p className="relative z-10 text-lg font-medium">Titulo do produto</p>
-      <p className="relative z-10 mt-24 max-w-[135px] text-xs font-medium leading-tight">
+      <p className="absolute left-8 top-8 z-10 line-clamp-2 max-w-[43%] text-lg font-medium">
+        Titulo do produto
+      </p>
+      <p className="absolute left-8 top-[48%] z-10 line-clamp-6 max-w-[40%] text-[11px] font-semibold leading-[1.12]">
         {product.description}
       </p>
       <div className="absolute bottom-8 left-8 z-10 bg-white px-3 py-1 text-lg text-slate-900">
@@ -261,7 +263,7 @@ function BrownBeigeMiniFeature({
       </div>
       <img
         alt={product.title}
-        className="absolute right-8 top-12 z-0 h-[63%] w-[45%] object-cover"
+        className="absolute right-7 top-12 z-0 h-[63%] w-[39%] object-cover"
         src={product.image}
       />
     </section>
