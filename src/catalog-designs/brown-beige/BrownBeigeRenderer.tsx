@@ -215,7 +215,7 @@ function BrownBeigeCoverPage({
         </h1>
       </div>
 
-      <div className="absolute bottom-[7.8%] left-0 flex h-28 items-center text-[#2D2B32]">
+      <div className="absolute bottom-[7.8%] left-0 flex h-28 items-center">
         {companyLogoUrl ? (
           <div className="flex h-24 w-56 items-center justify-end rounded-r-full bg-white py-3 pl-8 pr-9 shadow-lg ring-1 ring-black/5">
             <img
@@ -225,14 +225,6 @@ function BrownBeigeCoverPage({
             />
           </div>
         ) : null}
-        <div className="ml-7 min-w-0">
-          <p className="text-2xl font-light">
-            {companyName ? companyName.toLowerCase() : 'marca da empresa'}
-          </p>
-          <p className="mt-4 max-w-[340px] truncate text-lg font-light">
-            www.site-da-empresa.com.br
-          </p>
-        </div>
       </div>
     </BrownBeigePage>
   )
